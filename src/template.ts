@@ -181,16 +181,52 @@ const CSS = `
     .device-type-icon { font-size: 18px; }
     .device-name { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--paper); }
     .device-tag { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(72,208,206,0.15); }
+    .device-param-count { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); }
     .device-chevron { color: var(--paper-mute); transition: transform 0.2s; font-size: 12px; }
     .device-accordion.open .device-chevron { transform: rotate(180deg); }
     .device-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: var(--ink-2); }
-    .device-accordion.open .device-body { max-height: 2000px; }
-    .device-params { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
-    .param-row { display: grid; grid-template-columns: 140px 1fr 60px; gap: 12px; align-items: center; }
-    .param-name { font-family: var(--mono); font-size: 11px; color: var(--paper-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .param-bar-track { height: 4px; background: var(--paper-ghost); border-radius: 2px; overflow: hidden; }
-    .param-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--teal), var(--flame)); }
-    .param-value { font-family: var(--mono); font-size: 11px; color: var(--paper-dim); text-align: right; }
+    .device-accordion.open .device-body { max-height: 4000px; }
+
+    /* DEVICE SWITCHES (On/Off toggles) */
+    .device-switches { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .device-switch { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-sm); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; }
+    .device-switch.switch-on { background: rgba(72,208,206,0.10); color: var(--teal); }
+    .device-switch.switch-off { background: var(--paper-ghost); color: var(--paper-faint); }
+    .device-switch.switch-other { background: rgba(252,107,60,0.08); color: var(--flame); }
+    .switch-indicator { width: 6px; height: 6px; border-radius: 50%; }
+    .switch-on .switch-indicator { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+    .switch-off .switch-indicator { background: var(--paper-faint); }
+    .switch-other .switch-indicator { background: var(--flame); }
+    .switch-name { white-space: nowrap; }
+
+    /* DEVICE KNOBS (Professional audio style) */
+    .device-knobs { display: flex; flex-wrap: wrap; gap: 4px; padding: 16px; }
+    .knob-unit { width: 68px; text-align: center; padding: 8px 2px 6px; border-radius: var(--radius-sm); transition: background 0.2s; }
+    .knob-unit:hover { background: rgba(252,241,229,0.03); }
+    .knob-active { background: rgba(72,208,206,0.06); }
+
+    .knob-visual { position: relative; width: 36px; height: 36px; margin: 0 auto 6px; }
+    .knob-ring {
+      position: absolute; top: 3px; left: 3px; right: 3px; bottom: 3px;
+      border-radius: 50%;
+      border: 2px solid var(--line-2);
+      background: radial-gradient(circle at 40% 35%, var(--ink-4), var(--ink-2));
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(252,241,229,0.03);
+    }
+    .knob-needle {
+      position: absolute; top: 5px; left: 50%; width: 2px; height: 13px;
+      margin-left: -1px; transform-origin: bottom center;
+      background: linear-gradient(to top, var(--teal), var(--flame));
+      border-radius: 1px;
+    }
+    .knob-label { font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; color: var(--paper-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .knob-value { font-family: var(--mono); font-size: 9px; color: var(--paper-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .knob-more { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); padding: 12px; align-self: center; }
+
+    /* DEVICE CHAINS */
+    .device-chains { padding: 10px 16px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .chain-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--paper-faint); }
+    .chain-badge { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(72,208,206,0.15); }
 
     /* SCENES */
     .scene-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
@@ -522,11 +558,29 @@ function renderDeviceAccordion(device: SnapshotDevice): string {
   const tag = tagEmoji[device.type] ?? device.className;
 
   const chainInfo = device.chains.length > 0
-    ? `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
-        <span class="mono" style="font-size:11px; color:var(--paper-mute);">CHAINS:</span>
-        ${device.chains.map(c => `<span class="badge badge-teal" style="margin-left:6px;">${esc(c.name)}</span>`).join("")}
+    ? `<div class="device-chains">
+        <span class="chain-label">CHAINS</span>
+        ${device.chains.map(c => `<span class="chain-badge">${esc(c.name)}</span>`).join("")}
       </div>`
     : "";
+
+  // Separate params into knobs (continuous) and switches (quantized/toggle)
+  const knobs: SnapshotParameter[] = [];
+  const switches: SnapshotParameter[] = [];
+  for (const p of device.parameters) {
+    if (p.isQuantized && p.valueItems.length <= 2) {
+      switches.push(p);
+    } else if (p.isQuantized && p.valueItems.length > 0) {
+      // Selector params — treat as knobs but with labels
+      knobs.push(p);
+    } else {
+      knobs.push(p);
+    }
+  }
+
+  const maxKnobs = 40;
+  const visibleKnobs = knobs.slice(0, maxKnobs);
+  const hasMore = knobs.length > maxKnobs;
 
   return `        <div class="device-accordion">
           <div class="device-header">
@@ -534,53 +588,77 @@ function renderDeviceAccordion(device: SnapshotDevice): string {
               <span class="device-type-icon">${emoji}</span>
               <span class="device-name">${esc(device.name)}</span>
               <span class="device-tag">${tag}</span>
-              <span class="mono" style="font-size:11px; color:var(--paper-faint);">${device.parameters.length} params</span>
+              <span class="device-param-count">${device.parameters.length} params</span>
             </div>
             <span class="device-chevron">▼</span>
           </div>
           <div class="device-body">
-            <div class="device-params">
-              ${device.parameters.slice(0, 30).map(p => renderParam(p)).join("")}
-              ${device.parameters.length > 30 ? `<div class="mono" style="font-size:11px;color:var(--paper-faint);">... and ${device.parameters.length - 30} more parameters</div>` : ""}
-              ${chainInfo}
+            ${switches.length > 0 ? `
+            <div class="device-switches">
+              ${switches.map(p => renderSwitch(p)).join("")}
+            </div>` : ""}
+            <div class="device-knobs">
+              ${visibleKnobs.map(p => renderKnob(p)).join("")}
+              ${hasMore ? `<div class="knob-more">+${knobs.length - maxKnobs} more</div>` : ""}
             </div>
+            ${chainInfo}
           </div>
         </div>`;
 }
 
-function renderParam(param: SnapshotParameter): string {
-  // Safely get numeric value
+function getParamDisplay(param: SnapshotParameter): { display: string; pct: number } {
   const numValue = typeof param.value === "number" ? param.value : 0;
   const numMin = typeof param.minValue === "number" ? param.minValue : 0;
   const numMax = typeof param.maxValue === "number" ? param.maxValue : 1;
   const range = numMax - numMin;
   const pct = range > 0 ? Math.round(((numValue - numMin) / range) * 100) : 0;
 
-  // Determine display value
-  let displayValue: string;
+  let display: string;
   if (param.isQuantized && param.valueItems.length > 0) {
-    // Quantized param — try to get the label from valueItems
-    const idx = Math.round(numValue);
+    const idx = Math.max(0, Math.min(param.valueItems.length - 1, Math.round(numValue)));
     const item = param.valueItems[idx];
-    displayValue = typeof item === "string" ? item : typeof item === "number" ? String(item) : (param.valueItems[0] != null ? String(param.valueItems[0]) : String(numValue));
+    if (item && item !== "" && item !== "undefined") {
+      display = item;
+    } else {
+      display = numValue % 1 === 0 ? String(numValue) : numValue.toFixed(2);
+    }
   } else if (typeof param.value === "number") {
-    // Continuous param — show clean number
-    displayValue = param.value % 1 === 0 ? String(param.value) : param.value.toFixed(2);
+    display = param.value % 1 === 0 ? String(param.value) : param.value.toFixed(2);
   } else if (typeof param.value === "object" && param.value !== null) {
-    // Object value — try common properties
     const obj = param.value as any;
-    displayValue = obj.display ?? obj.name ?? obj.value ?? obj.label ?? String(obj);
+    display = obj.display ?? obj.name ?? obj.value ?? obj.label ?? "—";
   } else {
-    displayValue = String(param.value ?? "—");
+    display = String(param.value ?? "—");
   }
 
-  // Escape the display value
-  const safeDisplay = esc(String(displayValue));
+  return { display, pct };
+}
 
-  return `              <div class="param-row">
-                <div class="param-name" title="${esc(param.name)}">${esc(param.name)}</div>
-                <div class="param-bar-track"><div class="param-bar-fill" style="width:${pct}%"></div></div>
-                <div class="param-value">${safeDisplay}</div>
+function renderKnob(param: SnapshotParameter): string {
+  const { display, pct } = getParamDisplay(param);
+  const angle = -135 + (pct / 100) * 270; // -135° to +135° arc
+  const isOn = param.name === "Device On" || param.name === "On";
+  const highlightClass = isOn ? "knob-unit knob-active" : "knob-unit";
+
+  return `              <div class="${highlightClass}">
+                <div class="knob-visual">
+                  <div class="knob-ring"></div>
+                  <div class="knob-needle" style="transform:rotate(${angle}deg)"></div>
+                </div>
+                <div class="knob-label">${esc(param.name)}</div>
+                <div class="knob-value">${esc(String(display))}</div>
+              </div>`;
+}
+
+function renderSwitch(param: SnapshotParameter): string {
+  const { display } = getParamDisplay(param);
+  const isOn = display === "On" || display === "True" || display === "Yes" || display === "1" || display === "Active";
+  const isOff = display === "Off" || display === "False" || display === "No" || display === "0" || display === "Inactive";
+  const stateClass = isOn ? "switch-on" : isOff ? "switch-off" : "switch-other";
+
+  return `              <div class="device-switch ${stateClass}">
+                <div class="switch-indicator"></div>
+                <span class="switch-name">${esc(param.name)}</span>
               </div>`;
 }
 
