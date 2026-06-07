@@ -102,16 +102,37 @@ function extractOverview(song: any): SnapshotOverview {
     totalDeviceCount += track.devices.length;
   }
 
+  // Safely read song properties with fallbacks
+  let tempo = 120;
+  let sigNum = 4;
+  let sigDen = 4;
+  let rootNote = 0;
+  let scaleName = "None";
+  let scaleMode = 0;
+  let scaleIntervals: number[] = [];
+  let gridQuantization = "N/A";
+  let gridIsTriplet = false;
+
+  try { tempo = song.tempo ?? 120; } catch { /* default */ }
+  try { sigNum = song.signatureNumerator ?? 4; } catch { /* default */ }
+  try { sigDen = song.signatureDenominator ?? 4; } catch { /* default */ }
+  try { rootNote = song.rootNote ?? 0; } catch { /* default */ }
+  try { scaleName = song.scaleName ?? "None"; } catch { /* default */ }
+  try { scaleMode = song.scaleMode ?? 0; } catch { /* default */ }
+  try { scaleIntervals = song.scaleIntervals ?? []; } catch { /* default */ }
+  try { gridQuantization = String(song.gridQuantization ?? "N/A"); } catch { /* default */ }
+  try { gridIsTriplet = song.gridIsTriplet ?? false; } catch { /* default */ }
+
   return {
-    tempo: song.tempo,
-    signatureNumerator: song.signatureNumerator,
-    signatureDenominator: song.signatureDenominator,
-    gridQuantization: String(song.gridQuantization ?? "N/A"),
-    gridIsTriplet: song.gridIsTriplet ?? false,
-    rootNote: song.rootNote ?? 0,
-    scaleName: song.scaleName ?? "None",
-    scaleMode: song.scaleMode ?? 0,
-    scaleIntervals: song.scaleIntervals ?? [],
+    tempo,
+    signatureNumerator: sigNum,
+    signatureDenominator: sigDen,
+    gridQuantization,
+    gridIsTriplet,
+    rootNote,
+    scaleName,
+    scaleMode,
+    scaleIntervals,
     trackCount: song.tracks.length,
     sceneCount: song.scenes.length,
     cuePointCount: song.cuePoints.length,
