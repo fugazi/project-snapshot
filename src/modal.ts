@@ -464,7 +464,13 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
     color: #48d0ce;
     margin-bottom: 6px;
   }
+  .path-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
   .path-value {
+    flex: 1;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: rgba(252, 241, 229, 0.72);
@@ -473,6 +479,21 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
     user-select: text;
     -webkit-user-select: text;
   }
+  .btn-copy {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(72, 208, 206, 0.08);
+    border: 1px solid rgba(72, 208, 206, 0.15);
+    color: #48d0ce;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    line-height: 1;
+  }
+  .btn-copy:hover { background: rgba(72, 208, 206, 0.15); transform: scale(1.05); }
+  .btn-copy:active { transform: scale(0.95); }
+  .btn-copy.copied { background: rgba(61,214,140,0.12); border-color: rgba(61,214,140,0.2); color: #3dd68c; }
 
   .btn-done {
     width: 100%;
@@ -513,7 +534,10 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
 
   <div class="path-box">
     <div class="path-label">📁 Saved to</div>
-    <div class="path-value">${outputPath}</div>
+    <div class="path-row">
+      <div class="path-value" id="filePath">${outputPath}</div>
+      <button class="btn-copy" id="copyBtn" onclick="copyPath()" title="Copy path to clipboard">📋</button>
+    </div>
   </div>
 
   <button class="btn-done" onclick="closeDialog()">Done</button>
@@ -525,6 +549,19 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
       var msg = { method: 'close_and_send', params: ['done'] };
       if (isWebKit) window.webkit.messageHandlers.live.postMessage(msg);
       else if (isWebView2) window.chrome.webview.postMessage(msg);
+    }
+    function copyPath() {
+      var pathEl = document.getElementById('filePath');
+      var btn = document.getElementById('copyBtn');
+      if (!pathEl) return;
+      var text = pathEl.textContent || pathEl.innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+          btn.textContent = '✅';
+          btn.classList.add('copied');
+          setTimeout(function() { btn.textContent = '📋'; btn.classList.remove('copied'); }, 2000);
+        });
+      }
     }
     document.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === 'Escape') closeDialog(); });
   </script>
