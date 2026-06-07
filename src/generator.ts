@@ -11,19 +11,21 @@ import { renderTemplate } from "./template.js";
 export async function generateReport(
   data: ProjectSnapshot,
   storageDir: string,
+  filename?: string,
 ): Promise<string> {
   // Render the HTML
   const html = renderTemplate(data);
 
-  // Generate filename with timestamp
+  // Build filename
+  const baseName = filename || "project-snapshot";
   const now = new Date();
   const timestamp = now.toISOString()
     .replace(/[:.]/g, "-")
     .replace("T", "_")
     .slice(0, 19);
 
-  const filename = `project-snapshot-${timestamp}.html`;
-  const outputPath = path.join(storageDir, filename);
+  const finalFilename = `${baseName}-${timestamp}.html`;
+  const outputPath = path.join(storageDir, finalFilename);
 
   // Ensure directory exists
   fs.mkdirSync(storageDir, { recursive: true });
