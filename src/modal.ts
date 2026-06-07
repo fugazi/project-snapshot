@@ -555,12 +555,28 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
       var btn = document.getElementById('copyBtn');
       if (!pathEl) return;
       var text = pathEl.textContent || pathEl.innerText;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(function() {
-          btn.textContent = '✅';
-          btn.classList.add('copied');
-          setTimeout(function() { btn.textContent = '📋'; btn.classList.remove('copied'); }, 2000);
-        });
+      function onSuccess() {
+        btn.textContent = '✅';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = '📋'; btn.classList.remove('copied'); }, 2000);
+      }
+      function fallbackCopy() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.top = '-9999px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); onSuccess(); } catch(e) { btn.textContent = '❌'; setTimeout(function() { btn.textContent = '📋'; }, 2000); }
+        document.body.removeChild(ta);
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
       }
     }
     document.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === 'Escape') closeDialog(); });
