@@ -57,6 +57,24 @@ ${CSS}
 ${JS}
 </script>
 <div class="toast" id="toast"></div>
+
+<!-- Floating sidebar card -->
+<div class="float-card hidden" id="floatCard">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span class="progress-lbl">Reading</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+  <div class="float-brand">📸 Project Snapshot</div>
+  <div class="float-sub">Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a></div>
+</div>
+
+<!-- Scroll button -->
+<button class="scroll-btn" id="scrollBtn" onclick="toggleScroll()">↓</button>
 </body>
 </html>`;
 }
@@ -435,6 +453,67 @@ tbody tr:hover{background:rgba(62,240,224,0.04);}
 .insight-icon{font-size:24px;flex-shrink:0;}
 .insight-text{font-size:15px;color:var(--fg-2);line-height:1.7;}
 
+/* ── FLOATING SIDEBAR CARD ── */
+.float-card{
+  position:fixed;left:20px;bottom:24px;z-index:90;
+  width:200px;padding:16px;
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  backdrop-filter:blur(16px);
+  overflow:hidden;
+  transition:opacity 0.3s,transform 0.3s;
+}
+.float-card.hidden{opacity:0;transform:translateY(20px);pointer-events:none;}
+/* Laser scan animation */
+.float-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
+  background:linear-gradient(90deg,transparent 0%,var(--accent) 30%,var(--hot) 70%,transparent 100%);
+  opacity:0.4;animation:laserScan 4s ease-in-out infinite;
+}
+@keyframes laserScan{
+  0%{top:0;opacity:0.3;}
+  50%{top:100%;opacity:0.6;}
+  100%{top:0;opacity:0.3;}
+}
+/* Progress bar */
+.progress-wrap{margin-bottom:14px;}
+.progress-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.progress-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-4);}
+.progress-pct{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600;}
+.progress-track{
+  width:100%;height:6px;border-radius:3px;
+  background:var(--bg-2);overflow:hidden;position:relative;
+}
+.progress-fill{
+  height:100%;border-radius:3px;width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--hot));
+  transition:width 0.3s ease;
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;right:0;top:-1px;bottom:-1px;width:8px;
+  border-radius:4px;background:var(--accent);opacity:0.6;
+  box-shadow:0 0 8px var(--accent);
+}
+/* Card credits */
+.float-brand{font-weight:700;font-size:13px;color:var(--fg);margin-bottom:4px;}
+.float-sub{font-family:var(--mono);font-size:10px;color:var(--fg-4);line-height:1.6;}
+.float-sub a{color:var(--accent);}
+.float-sub a:hover{color:var(--fg);}
+
+/* ── SCROLL BUTTON ── */
+.scroll-btn{
+  position:fixed;right:20px;bottom:24px;z-index:90;
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(12px);color:var(--accent);
+  font-size:20px;cursor:pointer;
+  transition:all 0.25s;opacity:0;transform:scale(0.8);pointer-events:none;
+}
+.scroll-btn.visible{opacity:1;transform:scale(1);pointer-events:auto;}
+.scroll-btn:hover{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 16px var(--accent-bg);}
+
 /* ── FOOTER ── */
 .report-footer{
   text-align:center;padding:48px 0 24px;
@@ -469,6 +548,8 @@ tbody tr:hover{background:rgba(62,240,224,0.04);}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
   .track-grid{grid-template-columns:1fr;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
+  .float-card{left:12px;bottom:16px;width:160px;padding:12px;}
+  .scroll-btn{right:12px;bottom:16px;width:38px;height:38px;font-size:18px;}
 }
 `;
 
@@ -535,6 +616,61 @@ const JS = `
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
   }
+
+  // Floating card + progress bar
+  const floatCard = document.getElementById('floatCard');
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
+  const scrollBtn = document.getElementById('scrollBtn');
+
+  // Get all sections for progress tracking
+  const allSections = document.querySelectorAll('.section[id]');
+  const totalSections = allSections.length;
+
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0;
+
+    if (progressFill) progressFill.style.width = pct + '%';
+    if (progressPct) progressPct.textContent = pct + '%';
+
+    // Show/hide floating card after first section
+    if (floatCard) {
+      if (scrollTop > 300) floatCard.classList.remove('hidden');
+      else floatCard.classList.add('hidden');
+    }
+
+    // Scroll button: show down arrow near top, up arrow near bottom
+    if (scrollBtn) {
+      if (scrollTop > 200) {
+        scrollBtn.classList.add('visible');
+        if (scrollTop >= docHeight - 100) {
+          scrollBtn.textContent = '↑';
+          scrollBtn.title = 'Back to top';
+        } else {
+          scrollBtn.textContent = '↓';
+          scrollBtn.title = 'Scroll down';
+        }
+      } else {
+        scrollBtn.classList.remove('visible');
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateProgress, {passive: true});
+  updateProgress();
+
+  // Scroll toggle
+  window.toggleScroll = function() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollTop >= docHeight - 100) {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    } else {
+      window.scrollTo({top: document.documentElement.scrollHeight, behavior: 'smooth'});
+    }
+  };
 `;
 
 // ══════════════════════════════════════
