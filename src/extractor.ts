@@ -41,6 +41,7 @@ import {
 export async function extractSnapshot(
   context: ExtensionContext<"1.0.0">,
   updateProgress: (msg: string, pct: number) => Promise<void>,
+  projectName: string = "Project Snapshot",
 ): Promise<ProjectSnapshot> {
   const song = context.application.song;
 
@@ -79,6 +80,7 @@ export async function extractSnapshot(
   return {
     generatedAt,
     generatedDate,
+    projectName,
     overview,
     tracks,
     scenes,

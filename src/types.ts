@@ -99,6 +99,7 @@ export interface SnapshotSuggestion {
 export interface ProjectSnapshot {
   generatedAt: string;
   generatedDate: string;
+  projectName: string;
   overview: SnapshotOverview;
   tracks: SnapshotTrack[];
   scenes: SnapshotScene[];

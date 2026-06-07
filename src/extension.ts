@@ -122,7 +122,7 @@ async function runGeneration(
         const snapshot = await extractSnapshot(context, async (msg, pct) => {
           await update(msg, pct);
           signal.throwIfAborted();
-        });
+        }, filename);
 
         if (signal.aborted) return;
 

@@ -36,6 +36,7 @@ ${CSS}
       <a href="#notes" class="nav-link">Notes</a>
       <a href="#insights" class="nav-link">Insights</a>
     </div>
+    <button class="nav-share" onclick="shareReport()">🔗 Share</button>
     <button class="nav-print" onclick="window.print()">🖨️ Print</button>
   </nav>
 
@@ -55,6 +56,7 @@ ${CSS}
 <script>
 ${JS}
 </script>
+<div class="toast" id="toast"></div>
 </body>
 </html>`;
 }
@@ -127,12 +129,26 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 }
 .nav-link:hover{color:var(--fg);background:rgba(160,224,232,0.06);}
 .nav-link.active{color:var(--accent);background:var(--accent-bg);}
-.nav-print{
+.nav-print,.nav-share{
   font-size:13px;padding:6px 14px;border-radius:8px;
   background:rgba(160,224,232,0.08);color:var(--fg-3);
   border:1px solid var(--line);transition:all 0.15s;white-space:nowrap;
 }
-.nav-print:hover{background:rgba(160,224,232,0.14);color:var(--fg);}
+.nav-print:hover,.nav-share:hover{background:rgba(160,224,232,0.14);color:var(--fg);}
+.nav-share{background:rgba(82,240,160,0.08);border-color:rgba(82,240,160,0.15);color:var(--green);}
+.nav-share:hover{background:rgba(82,240,160,0.14);}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--glass);border:1px solid rgba(82,240,160,0.25);
+  border-radius:var(--radius);padding:12px 24px;
+  backdrop-filter:blur(16px);z-index:200;
+  font-size:14px;font-weight:500;color:var(--green);
+  opacity:0;transition:all 0.35s cubic-bezier(0.2,0.7,0.2,1);
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ── HERO ── */
 .hero{
@@ -491,6 +507,34 @@ const JS = `
     if(s) notes.value = s;
     notes.addEventListener('input', () => localStorage.setItem('ps-notes', notes.value));
   }
+
+  // Share functionality
+  window.shareReport = function() {
+    const title = document.title;
+    const text = 'Check out this Ableton Live project snapshot!';
+    const shareData = { title: title, text: text };
+    if (navigator.share) {
+      navigator.share(shareData).then(() => showToast('✅ Shared successfully!')).catch(() => {});
+    } else {
+      // Fallback: copy info to clipboard
+      const info = title + ' — ' + window.location.href;
+      const ta = document.createElement('textarea');
+      ta.value = info;
+      ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showToast('📋 Link copied to clipboard!'); }
+      catch(e) { showToast('❌ Could not copy'); }
+      document.body.removeChild(ta);
+    }
+  };
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
 `;
 
 // ══════════════════════════════════════
@@ -502,6 +546,12 @@ function renderHero(data: ProjectSnapshot): string {
   const scaleDisplay = o.scaleName && o.scaleName !== "None"
     ? `${NOTE_NAMES[o.rootNote]} ${o.scaleName}` : "No scale set";
 
+  // Truncate project name if too long for hero display
+  let heroName = data.projectName;
+  if (heroName.length > 40) heroName = heroName.substring(0, 37) + "...";
+  // Clean up dashes/underscores for display
+  heroName = heroName.replace(/[-_]/g, ' ');
+
   return `<section class="hero" id="hero">
   <div class="hero-bg"></div>
   <div class="blob blob-1"></div>
@@ -510,10 +560,11 @@ function renderHero(data: ProjectSnapshot): string {
   <div class="hero-content">
     <div class="hero-badge">📸 Project Snapshot</div>
     <h1 class="hero-title">
-      ${o.tempo} <span class="grad">BPM</span>
+      ${esc(heroName)}
     </h1>
     <p class="hero-sub">
       Generated on <strong>${data.generatedDate}</strong> ·
+      <strong>${o.tempo}</strong> BPM ·
       <strong>${o.trackCount}</strong> tracks ·
       <strong>${o.totalClipCount}</strong> clips ·
       <strong>${o.totalDeviceCount}</strong> devices
