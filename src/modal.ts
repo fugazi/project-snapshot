@@ -3,7 +3,20 @@
 // Deep Ink Luxury styled webview for Ableton Live
 // ──────────────────────────────────────────────
 
-export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; clipCount: number; deviceCount: number; sceneCount: number; audioTrackCount: number; midiTrackCount: number; signatureNumerator: number; signatureDenominator: number; scaleName: string; rootNote: number; }): string {
+export function buildModalHtml(quickInfo: {
+  tempo: number;
+  trackCount: number;
+  clipCount: number;
+  deviceCount: number;
+  sceneCount: number;
+  audioTrackCount: number;
+  midiTrackCount: number;
+  signatureNumerator: number;
+  signatureDenominator: number;
+  scaleName: string;
+  rootNote: number;
+  storageDir: string;
+}): string {
   const scaleDisplay = quickInfo.scaleName && quickInfo.scaleName !== "None"
     ? noteNames[quickInfo.rootNote] + " " + quickInfo.scaleName
     : "No scale set";
@@ -98,17 +111,6 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
     color: rgba(252, 241, 229, 0.40);
   }
 
-  /* Section Label */
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.20em;
-    text-transform: uppercase;
-    color: rgba(252, 241, 229, 0.40);
-    margin-bottom: 10px;
-    margin-top: 4px;
-  }
-
   /* Info row */
   .info-row {
     display: flex;
@@ -130,8 +132,19 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
     font-family: 'Nunito', sans-serif;
   }
 
+  /* Section Label */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: rgba(252, 241, 229, 0.40);
+    margin-bottom: 10px;
+    margin-top: 4px;
+  }
+
   /* Filename input */
-  .filename-group { margin-top: 4px; }
+  .filename-group { margin-bottom: 12px; }
   .filename-label {
     display: block;
     font-family: 'JetBrains Mono', monospace;
@@ -158,11 +171,29 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
     border-color: #48d0ce;
     box-shadow: 0 0 0 3px rgba(72, 208, 206, 0.08);
   }
-  .filename-hint {
+
+  /* Save location box */
+  .save-location {
+    background: rgba(72, 208, 206, 0.04);
+    border: 1px solid rgba(72, 208, 206, 0.10);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 4px;
+  }
+  .save-location-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    color: rgba(252, 241, 229, 0.30);
-    margin-top: 6px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #48d0ce;
+    margin-bottom: 4px;
+  }
+  .save-location-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(252, 241, 229, 0.60);
+    word-break: break-all;
+    line-height: 1.4;
   }
 
   /* Generate Button */
@@ -220,7 +251,6 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
     color: rgba(252, 241, 229, 0.20);
     letter-spacing: 0.08em;
   }
-  .footer a { color: #48d0ce; text-decoration: none; }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
@@ -286,12 +316,17 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
 
   <hr class="divider">
 
-  <!-- Filename -->
+  <!-- Output File -->
   <div class="section-label">📝 Output File</div>
   <div class="filename-group">
     <label class="filename-label">Filename</label>
     <input type="text" id="filename" class="filename-input" value="project-snapshot" placeholder="Enter filename...">
-    <div class="filename-hint">.html extension added automatically · Saved to extension storage directory</div>
+  </div>
+
+  <!-- Save Location -->
+  <div class="save-location">
+    <div class="save-location-label">📁 Save Location</div>
+    <div class="save-location-path" id="savePath">${quickInfo.storageDir}/<span id="previewName">project-snapshot</span>-<span id="previewTimestamp">YYYY-MM-DD</span>.html</div>
   </div>
 
   <!-- Buttons -->
@@ -302,12 +337,13 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
 
   <!-- Footer -->
   <div class="footer">
-    Created by <a href="#">Douglas Fugazi</a> · douglasfugazi.co
+    Created by Douglas Fugazi · douglasfugazi.co
   </div>
 
   <script>
     var isWebKit = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.live;
     var isWebView2 = window.chrome && window.chrome.webview;
+    var storageDir = ${JSON.stringify(quickInfo.storageDir)};
 
     function postMessage(msg) {
       if (isWebKit) {
@@ -317,13 +353,24 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
       }
     }
 
+    function updatePreview() {
+      var filename = document.getElementById('filename').value.trim() || 'project-snapshot';
+      if (filename.toLowerCase().endsWith('.html')) filename = filename.slice(0, -5);
+      document.getElementById('previewName').textContent = filename;
+      var now = new Date();
+      var ts = now.getFullYear() + '-' +
+        String(now.getMonth()+1).padStart(2,'0') + '-' +
+        String(now.getDate()).padStart(2,'0');
+      document.getElementById('previewTimestamp').textContent = ts;
+    }
+
+    document.getElementById('filename').addEventListener('input', updatePreview);
+    updatePreview();
+
     function generate() {
       var filename = document.getElementById('filename').value.trim();
       if (!filename) filename = 'project-snapshot';
-      // Remove .html if user typed it
-      if (filename.toLowerCase().endsWith('.html')) {
-        filename = filename.slice(0, -5);
-      }
+      if (filename.toLowerCase().endsWith('.html')) filename = filename.slice(0, -5);
       postMessage({ method: 'close_and_send', params: [JSON.stringify({ action: 'generate', filename: filename })] });
     }
 
@@ -335,6 +382,151 @@ export function buildModalHtml(quickInfo: { tempo: number; trackCount: number; c
       if (e.key === 'Enter') generate();
       if (e.key === 'Escape') cancel();
     });
+  </script>
+</body>
+</html>`)}`;
+}
+
+// ── Success Modal ──
+
+export function buildSuccessModalHtml(outputPath: string, summary: { tracks: number; clips: number; devices: number; tempo: number }): string {
+  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Project Snapshot — Success</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: #00131a; }
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #00131a;
+    color: #fcf1e5;
+    padding: 28px;
+    user-select: none;
+    -webkit-user-select: none;
+    text-align: center;
+  }
+
+  .icon { font-size: 48px; margin-bottom: 12px; }
+  .title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #48d0ce;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: rgba(252, 241, 229, 0.50);
+    margin-bottom: 24px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .summary-box {
+    background: rgba(252, 241, 229, 0.04);
+    border: 1px solid rgba(252, 241, 229, 0.08);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .summary-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #fcf1e5;
+  }
+  .summary-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(252, 241, 229, 0.40);
+  }
+
+  .path-box {
+    background: rgba(72, 208, 206, 0.04);
+    border: 1px solid rgba(72, 208, 206, 0.10);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+  .path-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #48d0ce;
+    margin-bottom: 6px;
+  }
+  .path-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(252, 241, 229, 0.72);
+    word-break: break-all;
+    line-height: 1.4;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .btn-done {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #48d0ce, #2dd4bf);
+    color: #00131a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .btn-done:hover { transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+  <div class="icon">✅</div>
+  <div class="title">Snapshot Generated!</div>
+  <div class="subtitle">Your project report is ready</div>
+
+  <div class="summary-grid">
+    <div class="summary-box">
+      <div class="summary-num">${summary.tracks}</div>
+      <div class="summary-label">Tracks</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-num">${summary.clips}</div>
+      <div class="summary-label">Clips</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-num">${summary.devices}</div>
+      <div class="summary-label">Devices</div>
+    </div>
+  </div>
+
+  <div class="path-box">
+    <div class="path-label">📁 Saved to</div>
+    <div class="path-value">${outputPath}</div>
+  </div>
+
+  <button class="btn-done" onclick="closeDialog()">Done</button>
+
+  <script>
+    var isWebKit = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.live;
+    var isWebView2 = window.chrome && window.chrome.webview;
+    function closeDialog() {
+      var msg = { method: 'close_and_send', params: ['done'] };
+      if (isWebKit) window.webkit.messageHandlers.live.postMessage(msg);
+      else if (isWebView2) window.chrome.webview.postMessage(msg);
+    }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === 'Escape') closeDialog(); });
   </script>
 </body>
 </html>`)}`;

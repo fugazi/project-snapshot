@@ -11,7 +11,7 @@ import {
 } from "@ableton-extensions/sdk";
 import { extractSnapshot } from "./extractor.js";
 import { generateReport } from "./generator.js";
-import { buildModalHtml } from "./modal.js";
+import { buildModalHtml, buildSuccessModalHtml } from "./modal.js";
 
 export function activate(activation: ActivationContext) {
   const context = initialize(activation, "1.0.0");
@@ -29,13 +29,11 @@ export function activate(activation: ActivationContext) {
       for (const track of song.tracks) {
         if (track instanceof AudioTrack) audioTrackCount++;
         if (track instanceof MidiTrack) midiTrackCount++;
-        // Count clips in clipSlots
         if (track.clipSlots) {
           for (const slot of track.clipSlots) {
             try { if (slot.clip) clipCount++; } catch { /* empty */ }
           }
         }
-        // Count arrangement clips
         if (track.arrangementClips) {
           clipCount += track.arrangementClips.length;
         }
@@ -55,6 +53,8 @@ export function activate(activation: ActivationContext) {
       try { sigNum = song.signatureNumerator ?? 4; } catch { /* default */ }
       try { sigDen = song.signatureDenominator ?? 4; } catch { /* default */ }
 
+      const storageDir = context.environment.storageDirectory;
+
       const quickInfo = {
         tempo: song.tempo,
         trackCount: song.tracks.length,
@@ -67,11 +67,12 @@ export function activate(activation: ActivationContext) {
         signatureDenominator: sigDen,
         scaleName,
         rootNote,
+        storageDir,
       };
 
       const modalHtml = buildModalHtml(quickInfo);
 
-      void context.ui.showModalDialog(modalHtml, 480, 520).then((resultStr: string) => {
+      void context.ui.showModalDialog(modalHtml, 480, 580).then((resultStr: string) => {
         try {
           const result = JSON.parse(resultStr);
           if (result.action === "generate") {
@@ -81,13 +82,12 @@ export function activate(activation: ActivationContext) {
           console.error("Modal result parse error:", e);
         }
       }).catch(() => {
-        // User closed the dialog without action — that's fine
         console.log("📸 Project Snapshot modal closed.");
       });
     },
   );
 
-  // Register context menu actions — available from multiple scopes
+  // Register context menu actions
   const scopes = [
     "ClipSlot",
     "AudioTrack",
@@ -119,7 +119,6 @@ async function runGeneration(
     { progress: 5 },
     async (update: (msg: string, pct: number) => Promise<void>, signal: AbortSignal) => {
       try {
-        // Phase 1: Extract all data from the Live Set
         const snapshot = await extractSnapshot(context, async (msg, pct) => {
           await update(msg, pct);
           signal.throwIfAborted();
@@ -129,17 +128,25 @@ async function runGeneration(
 
         await update("Generating HTML report...", 85);
 
-        // Phase 2: Generate the HTML report
         const storageDir = context.environment.storageDirectory;
         const outputPath = await generateReport(snapshot, storageDir, filename);
 
         await update("Done! ✅", 100);
 
-        // Log the output path so the user can find it
         console.log(`\n📸 Project Snapshot generated successfully!`);
         console.log(`📄 File: ${outputPath}`);
-        console.log(`📊 Summary: ${snapshot.overview.trackCount} tracks, ${snapshot.overview.totalClipCount} clips, ${snapshot.overview.totalDeviceCount} devices`);
-        console.log(`⏱️  Tempo: ${snapshot.overview.tempo} BPM | 🎵 Key: ${snapshot.overview.scaleName || "None"}`);
+        console.log(`📊 ${snapshot.overview.trackCount} tracks, ${snapshot.overview.totalClipCount} clips, ${snapshot.overview.totalDeviceCount} devices`);
+        console.log(`⏱️  ${snapshot.overview.tempo} BPM | 🎵 ${snapshot.overview.scaleName || "None"}`);
+
+        // Show success modal with the file path
+        const successHtml = buildSuccessModalHtml(outputPath, {
+          tracks: snapshot.overview.trackCount,
+          clips: snapshot.overview.totalClipCount,
+          devices: snapshot.overview.totalDeviceCount,
+        });
+
+        void context.ui.showModalDialog(successHtml, 420, 400).catch(() => {});
+
       } catch (e) {
         if (signal.aborted) return;
         console.error("❌ Project Snapshot error:", e);
