@@ -113,7 +113,7 @@ const CSS = `
     .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper-mute); display: inline-flex; align-items: center; gap: 10px; }
     .eyebrow-dot::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
     .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--wrap-pad); position: relative; }
-    .section { padding: 80px 0; position: relative; border-top: 1px solid var(--line); }
+    .section { padding: 48px 0; position: relative; border-top: 1px solid var(--line); }
     .section.no-border { border-top: none; }
 
     /* NAV */
@@ -126,7 +126,7 @@ const CSS = `
     .nav-links a:hover { color: var(--paper); }
 
     /* HERO */
-    .hero { min-height: 50vh; display: flex; align-items: center; padding-top: 80px; position: relative; overflow: hidden; }
+    .hero { display: flex; align-items: center; padding-top: 100px; padding-bottom: 20px; position: relative; overflow: hidden; }
     .hero-content { max-width: 700px; position: relative; }
     .hero .glow-teal { position: absolute; top: -100px; right: -50px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(72,208,206,0.15), transparent 70%); pointer-events: none; animation: glow-pulse 4s ease-in-out infinite; }
     .hero .glow-flame { position: absolute; bottom: -80px; left: -100px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(252,107,60,0.12), transparent 70%); pointer-events: none; animation: glow-pulse 5s ease-in-out infinite; }
