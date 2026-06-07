@@ -27,11 +27,23 @@ The report is generated as a standalone HTML file with the **Deep Ink Luxury** d
 
 ### Prerequisites
 
-- **Node.js** ≥ 24.14.1
 - **Ableton Live** — Beta build with Extensions support
-- **Extensions SDK** — Downloaded from Ableton's Centercode
 
-### Installation
+### Installation (Easy Way — Download .ablx)
+
+1. Download the latest [`project-snapshot.ablx`](./project-snapshot.ablx) file from this repository
+2. Open Ableton Live
+3. Go to **Settings → Extensions**
+4. **Drag and drop** the `.ablx` file onto the Extensions page
+5. The extension is now installed! Right-click anywhere to generate a snapshot
+
+> The `.ablx` file is a pre-built, ready-to-install extension package. No Node.js or build tools required.
+
+---
+
+### Installation (Developer Way — Build from Source)
+
+**Prerequisites:** Node.js ≥ 24.14.1
 
 1. Clone this repository:
    ```bash
@@ -62,9 +74,11 @@ The report is generated as a standalone HTML file with the **Deep Ink Luxury** d
    npm start
    ```
 
+---
+
 ### Usage
 
-1. With the extension running, open any Live Set in Ableton Live
+1. With the extension loaded, open any Live Set in Ableton Live
 2. **Right-click** on almost any element (track, clip, scene, arrangement selection)
 3. Click **📸 Generate Project Snapshot**
 4. Wait for the progress bar to complete
@@ -145,8 +159,24 @@ The extension analyzes your project and provides contextual tips:
 | Command | Description |
 |---------|-------------|
 | `npm start` | Build and run the extension in Live |
-| `npm run build` | Build without running |
-| `npm run package` | Production build (minified) |
+| `npm run build` | Production build (minified, no sourcemaps) |
+| `npm run package` | Build + package into `.ablx` installable file |
+
+### Building a new .ablx
+
+If you made changes and want to generate a new installable:
+
+```bash
+npm run package
+```
+
+Or manually:
+```bash
+npx tsx build.ts --production
+npx extensions-cli package -o project-snapshot.ablx
+```
+
+The `.ablx` file can be shared and installed by dragging it into Live's Extensions page.
 
 ---
 
