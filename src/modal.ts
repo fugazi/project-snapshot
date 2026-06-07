@@ -319,6 +319,10 @@ export function buildModalHtml(quickInfo: {
   <!-- Output File -->
   <div class="section-label">📝 Output File</div>
   <div class="filename-group">
+    <label class="filename-label">Project Name</label>
+    <input type="text" id="projectname" class="filename-input" value="${getDefaultProjectName(quickInfo)}" placeholder="Enter your project name...">
+  </div>
+  <div class="filename-group">
     <label class="filename-label">Filename</label>
     <input type="text" id="filename" class="filename-input" value="project-snapshot" placeholder="Enter filename...">
   </div>
@@ -369,9 +373,11 @@ export function buildModalHtml(quickInfo: {
 
     function generate() {
       var filename = document.getElementById('filename').value.trim();
+      var projectname = document.getElementById('projectname').value.trim();
       if (!filename) filename = 'project-snapshot';
       if (filename.toLowerCase().endsWith('.html')) filename = filename.slice(0, -5);
-      postMessage({ method: 'close_and_send', params: [JSON.stringify({ action: 'generate', filename: filename })] });
+      if (!projectname) projectname = filename;
+      postMessage({ method: 'close_and_send', params: [JSON.stringify({ action: 'generate', filename: filename, projectname: projectname })] });
     }
 
     function cancel() {
@@ -586,3 +592,13 @@ export function buildSuccessModalHtml(outputPath: string, summary: { tracks: num
 }
 
 const noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+function getDefaultProjectName(info: { tempo: number; trackCount: number; signatureNumerator: number; signatureDenominator: number; scaleName: string; rootNote: number }): string {
+  const noteNamesLocal = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const scale = info.scaleName && info.scaleName !== "None"
+    ? noteNamesLocal[info.rootNote] + " " + info.scaleName
+    : "";
+  const parts = ["Ableton Project"];
+  if (scale) parts.unshift(scale);
+  return parts.join(" — ");
+}

@@ -76,7 +76,7 @@ export function activate(activation: ActivationContext) {
         try {
           const result = JSON.parse(resultStr);
           if (result.action === "generate") {
-            void runGeneration(context, result.filename || "project-snapshot");
+            void runGeneration(context, result.filename || "project-snapshot", result.projectname || result.filename || "Ableton Project");
           }
         } catch (e) {
           console.error("Modal result parse error:", e);
@@ -113,6 +113,7 @@ export function activate(activation: ActivationContext) {
 async function runGeneration(
   context: any,
   filename: string,
+  projectName: string,
 ): Promise<void> {
   await context.ui.withinProgressDialog(
     "📸 Project Snapshot — Analyzing your project...",
@@ -122,7 +123,7 @@ async function runGeneration(
         const snapshot = await extractSnapshot(context, async (msg, pct) => {
           await update(msg, pct);
           signal.throwIfAborted();
-        }, filename);
+        }, projectName);
 
         if (signal.aborted) return;
 

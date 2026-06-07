@@ -26,7 +26,7 @@ ${CSS}
 <body>
   <!-- Navigation -->
   <nav class="top-nav">
-    <div class="nav-brand">📸 Project Snapshot</div>
+    <div class="nav-brand">📸 Snapshot</div>
     <div class="nav-links">
       <a href="#overview" class="nav-link active">Overview</a>
       <a href="#tracks" class="nav-link">Tracks</a>
@@ -36,8 +36,10 @@ ${CSS}
       <a href="#notes" class="nav-link">Notes</a>
       <a href="#insights" class="nav-link">Insights</a>
     </div>
-    <button class="nav-share" onclick="shareReport()">🔗 Share</button>
-    <button class="nav-print" onclick="window.print()">🖨️ Print</button>
+    <div class="nav-right">
+      <button class="nav-share" onclick="shareReport()">🔗</button>
+      <button class="nav-print" onclick="window.print()">🖨️</button>
+    </div>
   </nav>
 
   ${renderHero(data)}
@@ -59,7 +61,7 @@ ${JS}
 <div class="toast" id="toast"></div>
 
 <!-- Floating sidebar card -->
-<div class="float-card hidden" id="floatCard">
+<div class="float-card card-hidden" id="floatCard">
   <div class="progress-wrap">
     <div class="progress-label">
       <span class="progress-lbl">Reading</span>
@@ -133,13 +135,15 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 /* ── TOP NAVIGATION ── */
 .top-nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  display:flex;align-items:center;gap:24px;
-  padding:14px 32px;
-  background:rgba(10,30,38,0.85);backdrop-filter:blur(16px);
+  display:flex;align-items:center;gap:16px;
+  padding:14px 24px;
+  background:rgba(10,30,38,0.92);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--line);
 }
 .nav-brand{font-weight:700;font-size:17px;color:var(--fg);white-space:nowrap;}
-.nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;}
+.nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.nav-links::-webkit-scrollbar{display:none;}
 .nav-link{
   font-size:14px;font-weight:500;color:var(--fg-4);
   padding:6px 14px;border-radius:8px;
@@ -147,6 +151,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 }
 .nav-link:hover{color:var(--fg);background:rgba(160,224,232,0.06);}
 .nav-link.active{color:var(--accent);background:var(--accent-bg);}
+.nav-right{display:flex;gap:8px;flex-shrink:0;}
 .nav-print,.nav-share{
   font-size:13px;padding:6px 14px;border-radius:8px;
   background:rgba(160,224,232,0.08);color:var(--fg-3);
@@ -457,22 +462,24 @@ tbody tr:hover{background:rgba(62,240,224,0.04);}
 .float-card{
   position:fixed;left:20px;bottom:24px;z-index:90;
   width:200px;padding:16px;
-  background:var(--glass);border:1px solid var(--line);
+  background:rgba(14,42,52,0.85);border:1px solid var(--line);
   border-radius:var(--radius-lg);
   backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   overflow:hidden;
-  transition:opacity 0.3s,transform 0.3s;
+  transition:opacity 0.4s,transform 0.4s;
 }
-.float-card.hidden{opacity:0;transform:translateY(20px);pointer-events:none;}
+.float-card.card-hidden{opacity:0;transform:translateY(20px);pointer-events:none;}
 /* Laser scan animation */
 .float-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
   background:linear-gradient(90deg,transparent 0%,var(--accent) 30%,var(--hot) 70%,transparent 100%);
   opacity:0.4;animation:laserScan 4s ease-in-out infinite;
+  pointer-events:none;
 }
 @keyframes laserScan{
   0%{top:0;opacity:0.3;}
-  50%{top:100%;opacity:0.6;}
+  50%{top:calc(100% - 2px);opacity:0.5;}
   100%{top:0;opacity:0.3;}
 }
 /* Progress bar */
@@ -506,12 +513,13 @@ tbody tr:hover{background:rgba(62,240,224,0.04);}
   position:fixed;right:20px;bottom:24px;z-index:90;
   width:44px;height:44px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  background:var(--glass);border:1px solid var(--line);
-  backdrop-filter:blur(12px);color:var(--accent);
+  background:rgba(14,42,52,0.85);border:1px solid var(--line);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:var(--accent);
   font-size:20px;cursor:pointer;
   transition:all 0.25s;opacity:0;transform:scale(0.8);pointer-events:none;
 }
-.scroll-btn.visible{opacity:1;transform:scale(1);pointer-events:auto;}
+.scroll-btn.btn-visible{opacity:1;transform:scale(1);pointer-events:auto;}
 .scroll-btn:hover{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 16px var(--accent-bg);}
 
 /* ── FOOTER ── */
@@ -537,19 +545,36 @@ tbody tr:hover{background:rgba(62,240,224,0.04);}
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
-  .top-nav{padding:12px 16px;gap:12px;}
-  .nav-links{gap:2px;}
-  .nav-link{font-size:13px;padding:5px 10px;}
-  .hero{min-height:70vh;padding:100px 16px 60px;}
-  .hero-title{font-size:clamp(32px,6vw,52px);}
+  .top-nav{padding:10px 12px;gap:8px;}
+  .nav-brand{font-size:14px;}
+  .nav-links{gap:2px;-webkit-overflow-scrolling:touch;}
+  .nav-link{font-size:12px;padding:5px 8px;}
+  .nav-right .nav-share,.nav-right .nav-print{font-size:12px;padding:5px 10px;}
+  .hero{min-height:65vh;padding:80px 16px 50px;}
+  .hero-title{font-size:clamp(24px,6vw,44px);}
   .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .hero-sub{font-size:15px;}
   .page-content{padding:0 16px 60px;}
-  .section{padding:40px 0;}
+  .section{padding:36px 0;}
+  .section-title{font-size:clamp(22px,4vw,32px);}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
   .track-grid{grid-template-columns:1fr;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
-  .float-card{left:12px;bottom:16px;width:160px;padding:12px;}
-  .scroll-btn{right:12px;bottom:16px;width:38px;height:38px;font-size:18px;}
+  .float-card{left:10px;bottom:14px;width:150px;padding:12px;font-size:11px;}
+  .scroll-btn{right:10px;bottom:14px;width:38px;height:38px;font-size:18px;}
+}
+@media(max-width:480px){
+  .top-nav{padding:8px 8px;gap:6px;}
+  .nav-brand{font-size:13px;}
+  .nav-link{font-size:11px;padding:4px 6px;}
+  .hero{min-height:55vh;padding:70px 12px 40px;}
+  .hero-stats{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .hero-stat{padding:12px 8px;}
+  .hero-stat-val{font-size:22px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .float-card{width:130px;padding:10px;}
+  .float-brand{font-size:11px;}
+  .float-sub{font-size:9px;}
 }
 `;
 
@@ -623,49 +648,50 @@ const JS = `
   const progressPct = document.getElementById('progressPct');
   const scrollBtn = document.getElementById('scrollBtn');
 
-  // Get all sections for progress tracking
-  const allSections = document.querySelectorAll('.section[id]');
-  const totalSections = allSections.length;
-
   function updateProgress() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0;
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    var docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+    var pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0;
 
     if (progressFill) progressFill.style.width = pct + '%';
     if (progressPct) progressPct.textContent = pct + '%';
 
-    // Show/hide floating card after first section
+    // Show/hide floating card after scrolling past hero
     if (floatCard) {
-      if (scrollTop > 300) floatCard.classList.remove('hidden');
-      else floatCard.classList.add('hidden');
+      if (scrollTop > 200) floatCard.classList.remove('card-hidden');
+      else floatCard.classList.add('card-hidden');
     }
 
-    // Scroll button: show down arrow near top, up arrow near bottom
+    // Scroll button: show after a bit of scrolling
     if (scrollBtn) {
-      if (scrollTop > 200) {
-        scrollBtn.classList.add('visible');
-        if (scrollTop >= docHeight - 100) {
-          scrollBtn.textContent = '↑';
+      if (scrollTop > 150) {
+        scrollBtn.classList.add('btn-visible');
+        if (docHeight > 0 && scrollTop >= docHeight - 100) {
+          scrollBtn.textContent = '\u2191';
           scrollBtn.title = 'Back to top';
         } else {
-          scrollBtn.textContent = '↓';
+          scrollBtn.textContent = '\u2193';
           scrollBtn.title = 'Scroll down';
         }
       } else {
-        scrollBtn.classList.remove('visible');
+        scrollBtn.classList.remove('btn-visible');
       }
     }
   }
 
   window.addEventListener('scroll', updateProgress, {passive: true});
-  updateProgress();
+  // Also run on load and resize
+  window.addEventListener('load', updateProgress);
+  window.addEventListener('resize', updateProgress);
+  // Initial check
+  setTimeout(updateProgress, 100);
+  setTimeout(updateProgress, 500);
 
   // Scroll toggle
   window.toggleScroll = function() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    if (scrollTop >= docHeight - 100) {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    var docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+    if (docHeight > 0 && scrollTop >= docHeight - 100) {
       window.scrollTo({top: 0, behavior: 'smooth'});
     } else {
       window.scrollTo({top: document.documentElement.scrollHeight, behavior: 'smooth'});
