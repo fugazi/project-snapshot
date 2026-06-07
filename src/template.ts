@@ -1,7 +1,8 @@
 // ──────────────────────────────────────────────
-// Project Snapshot — Redesigned Template v2
-// Teal Green Dashboard · High Contrast · Accessible
-// ══════════════════════════════════════
+// Project Snapshot — Template v3
+// Kimi-inspired Vertical Layout · Teal Green
+// Full-page scroll · Glass cards · Hero section
+// ──────────────────────────────────────────────
 
 import type { ProjectSnapshot, SnapshotTrack, SnapshotClip, SnapshotDevice, SnapshotParameter } from "./types.js";
 import { getTrackTypeName, getTrackTypeEmoji, midiNoteToName } from "./types.js";
@@ -17,25 +18,40 @@ export function renderTemplate(data: ProjectSnapshot): string {
   <title>📸 Project Snapshot — ${o.tempo} BPM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
 ${CSS}
   </style>
 </head>
 <body>
-  <div class="app">
-    ${renderSidebar(data)}
-    <main class="main">
-      ${renderHeader(data)}
-      <div class="panel active" id="panel-overview">${renderOverview(data)}</div>
-      <div class="panel" id="panel-tracks">${renderTracksPanel(data)}</div>
-      <div class="panel" id="panel-clips">${renderClipsPanel(data)}</div>
-      <div class="panel" id="panel-devices">${renderDevicesPanel(data)}</div>
-      <div class="panel" id="panel-scenes">${renderScenesPanel(data)}</div>
-      <div class="panel" id="panel-notes">${renderNotesPanel()}</div>
-      <div class="panel" id="panel-insights">${renderInsightsPanel(data)}</div>
-    </main>
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <div class="nav-brand">📸 Project Snapshot</div>
+    <div class="nav-links">
+      <a href="#overview" class="nav-link active">Overview</a>
+      <a href="#tracks" class="nav-link">Tracks</a>
+      <a href="#clips" class="nav-link">Clips</a>
+      <a href="#devices" class="nav-link">Devices</a>
+      <a href="#scenes" class="nav-link">Scenes</a>
+      <a href="#notes" class="nav-link">Notes</a>
+      <a href="#insights" class="nav-link">Insights</a>
+    </div>
+    <button class="nav-print" onclick="window.print()">🖨️ Print</button>
+  </nav>
+
+  ${renderHero(data)}
+
+  <div class="page-content">
+    ${renderOverviewSection(data)}
+    ${renderTracksSection(data)}
+    ${renderClipsSection(data)}
+    ${renderDevicesSection(data)}
+    ${renderScenesSection(data)}
+    ${renderNotesSection()}
+    ${renderInsightsSection(data)}
+    ${renderFooter(data)}
   </div>
+
 <script>
 ${JS}
 </script>
@@ -44,13 +60,12 @@ ${JS}
 }
 
 // ══════════════════════════════════════
-// CSS — Teal Green Dashboard · High Contrast
+// CSS — Teal Green · Kimi-inspired Layout
 // ══════════════════════════════════════
 
 const CSS = `
 :root {
-  /* ── Teal Green Palette ── */
-  --bg-0: #0a2028;
+  --bg-0: #0a1e26;
   --bg-1: #0e2a34;
   --bg-2: #13343b;
   --bg-3: #184248;
@@ -68,21 +83,26 @@ const CSS = `
   --hot-2:    #ffb347;
   --hot-bg:   rgba(255,143,92,0.08);
   --hot-g:    rgba(255,143,92,0.20);
+  --purple:   #a07aff;
+  --purple-bg:rgba(160,122,255,0.08);
   --green:    #52f0a0;
+  --green-bg: rgba(82,240,160,0.08);
   --red:      #ff6b7a;
+  --red-bg:   rgba(255,107,122,0.08);
   --yellow:   #ffe066;
-  --line:     rgba(160,224,232,0.12);
-  --line-2:   rgba(160,224,232,0.22);
-  --radius:   10px;
+  --yellow-bg:rgba(255,224,102,0.08);
+  --line:     rgba(160,224,232,0.10);
+  --line-2:   rgba(160,224,232,0.18);
+  --glass:    rgba(14,42,52,0.70);
+  --radius:   12px;
   --radius-lg:16px;
   --sans:     'DM Sans', system-ui, -apple-system, sans-serif;
   --mono:     'DM Mono', ui-monospace, 'Cascadia Code', monospace;
   --display:  'Playfair Display', Georgia, serif;
-  --sidebar-w: 240px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{background:var(--bg-0);scroll-behavior:smooth;}
-body{font-family:var(--sans);color:var(--fg);background:var(--bg-0);-webkit-font-smoothing:antialiased;line-height:1.6;overflow:hidden;height:100vh;}
+body{font-family:var(--sans);color:var(--fg);background:var(--bg-0);-webkit-font-smoothing:antialiased;line-height:1.6;}
 a{color:inherit;text-decoration:none;}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 ::-webkit-scrollbar{width:6px;}
@@ -90,167 +110,243 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 ::-webkit-scrollbar-thumb{background:var(--fg-5);border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--fg-4);}
 
-/* ── APP LAYOUT ── */
-.app{display:flex;height:100vh;overflow:hidden;}
-
-/* ── SIDEBAR ── */
-.sidebar{
-  width:var(--sidebar-w);min-width:var(--sidebar-w);
-  background:var(--bg-1);border-right:1px solid var(--line);
-  display:flex;flex-direction:column;padding:0;
-  overflow-y:auto;
-}
-.sidebar-brand{
-  padding:24px 20px 18px;display:flex;align-items:center;gap:12px;
+/* ── TOP NAVIGATION ── */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;gap:24px;
+  padding:14px 32px;
+  background:rgba(10,30,38,0.85);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--line);
 }
-.sidebar-brand-icon{font-size:26px;}
-.sidebar-brand-text{font-weight:700;font-size:17px;color:var(--fg);}
-.sidebar-brand-ver{font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-top:2px;}
-
-.sidebar-nav{padding:14px 12px;flex:1;}
-.nav-item{
-  display:flex;align-items:center;gap:12px;
-  padding:11px 14px;border-radius:8px;
-  font-size:15px;font-weight:500;color:var(--fg-3);
-  transition:all 0.15s;cursor:pointer;margin-bottom:3px;
+.nav-brand{font-weight:700;font-size:17px;color:var(--fg);white-space:nowrap;}
+.nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;}
+.nav-link{
+  font-size:14px;font-weight:500;color:var(--fg-4);
+  padding:6px 14px;border-radius:8px;
+  transition:all 0.15s;white-space:nowrap;
 }
-.nav-item:hover{color:var(--fg);background:rgba(160,224,232,0.06);}
-.nav-item.active{color:var(--accent);background:var(--accent-bg);font-weight:600;}
-.nav-icon{font-size:17px;width:24px;text-align:center;}
+.nav-link:hover{color:var(--fg);background:rgba(160,224,232,0.06);}
+.nav-link.active{color:var(--accent);background:var(--accent-bg);}
+.nav-print{
+  font-size:13px;padding:6px 14px;border-radius:8px;
+  background:rgba(160,224,232,0.08);color:var(--fg-3);
+  border:1px solid var(--line);transition:all 0.15s;white-space:nowrap;
+}
+.nav-print:hover{background:rgba(160,224,232,0.14);color:var(--fg);}
 
-.sidebar-footer{
-  padding:18px 20px;border-top:1px solid var(--line);
-  font-family:var(--mono);font-size:11px;color:var(--fg-4);
+/* ── HERO ── */
+.hero{
+  min-height:80vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:120px 32px 80px;position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(62,240,224,0.08) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 80%,rgba(255,143,92,0.05) 0%,transparent 50%),
+             var(--bg-0);
+}
+.hero-content{position:relative;z-index:2;max-width:800px;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:99px;
+  background:var(--accent-bg);border:1px solid rgba(62,240,224,0.15);
+  font-size:14px;font-weight:500;color:var(--accent);
+  margin-bottom:24px;
+  animation:fadeInDown 0.6s ease both;
+}
+.hero-title{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(40px,7vw,72px);line-height:1.1;
+  color:var(--fg);margin-bottom:16px;
+  letter-spacing:-0.02em;
+  animation:fadeInDown 0.6s 0.1s ease both;
+}
+.hero-title .grad{
+  background:linear-gradient(135deg,var(--accent),var(--hot));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:18px;color:var(--fg-3);max-width:560px;margin:0 auto 20px;
   line-height:1.7;
+  animation:fadeInDown 0.6s 0.2s ease both;
 }
-.sidebar-footer a{color:var(--accent);}
+.hero-sub strong{color:var(--accent);font-weight:600;}
+.hero-meta{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:32px;
+  animation:fadeInDown 0.6s 0.3s ease both;
+}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;color:var(--fg-3);
+  padding:6px 14px;border-radius:8px;
+  background:rgba(14,42,52,0.6);border:1px solid var(--line);
+  backdrop-filter:blur(8px);
+}
+.hero-chip .v{color:var(--fg);font-weight:600;}
+.hero-chip .e{font-size:16px;}
+.hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:600px;margin:0 auto;
+  animation:fadeInDown 0.6s 0.4s ease both;
+}
+.hero-stat{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 12px;
+  backdrop-filter:blur(12px);text-align:center;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.hero-stat:hover{border-color:var(--accent);transform:translateY(-2px);}
+.hero-stat-val{font-weight:800;font-size:28px;line-height:1;margin-bottom:4px;}
+.hero-stat-val.teal{color:var(--accent);}
+.hero-stat-val.hot{color:var(--hot);}
+.hero-stat-val.fg{color:var(--fg);}
+.hero-stat-val.green{color:var(--green);}
+.hero-stat-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-4);}
+.hero-scroll{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  color:var(--fg-4);font-size:24px;
+  animation:bounce 2s infinite;
+}
+/* decorative blobs */
+.blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.blob-1{width:300px;height:300px;background:rgba(62,240,224,0.12);top:10%;left:-5%;}
+.blob-2{width:350px;height:350px;background:rgba(255,143,92,0.08);bottom:5%;right:-5%;}
+.blob-3{width:200px;height:200px;background:rgba(160,122,255,0.06);top:60%;left:50%;}
 
-/* ── MAIN ── */
-.main{flex:1;overflow-y:auto;padding:0;position:relative;}
-.panel{display:none;padding:32px 36px 56px;animation:fadeIn 0.25s ease;}
-.panel.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* ── PAGE CONTENT ── */
+.page-content{max-width:960px;margin:0 auto;padding:0 32px 80px;}
 
-/* ── HEADER BAR ── */
-.header-bar{
-  padding:18px 36px;border-bottom:1px solid var(--line);
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(10,32,40,0.85);backdrop-filter:blur(12px);
-  position:sticky;top:0;z-index:10;
+/* ── SECTION ── */
+.section{padding:64px 0;position:relative;}
+.section:first-child{padding-top:32px;}
+.section-head{text-align:center;margin-bottom:40px;}
+.section-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:99px;
+  font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.08em;
+  margin-bottom:14px;
 }
-.header-left{display:flex;align-items:center;gap:16px;}
-.header-title{font-weight:700;font-size:18px;color:var(--fg);}
-.header-badge{
-  font-family:var(--mono);font-size:12px;
-  padding:4px 12px;border-radius:99px;
-  background:var(--accent-bg);color:var(--accent);
-  border:1px solid rgba(62,240,224,0.15);
-}
-.header-right{display:flex;align-items:center;gap:12px;}
-.btn-scroll{
-  font-size:13px;padding:6px 16px;border-radius:99px;
-  background:rgba(160,224,232,0.08);color:var(--fg-3);border:1px solid var(--line);
-  transition:all 0.15s;
-}
-.btn-scroll:hover{background:rgba(160,224,232,0.14);color:var(--fg);}
-
-/* ── SECTION TITLES ── */
-.section-head{
-  display:flex;align-items:center;gap:12px;margin-bottom:24px;
-}
-.section-eyebrow{
-  font-family:var(--mono);font-size:12px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--fg-4);
-}
+.section-badge.teal{background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.15);}
+.section-badge.hot{background:var(--hot-bg);color:var(--hot);border:1px solid rgba(255,143,92,0.15);}
+.section-badge.purple{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(160,122,255,0.15);}
+.section-badge.green{background:var(--green-bg);color:var(--green);border:1px solid rgba(82,240,160,0.15);}
 .section-title{
-  font-family:var(--display);font-weight:700;font-size:30px;color:var(--fg);
-  letter-spacing:-0.01em;
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(28px,4vw,44px);color:var(--fg);
+  letter-spacing:-0.01em;margin-bottom:10px;
 }
-.section-title .a{color:var(--accent);}
+.section-title .grad{
+  background:linear-gradient(135deg,var(--accent),var(--hot));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.section-desc{font-size:16px;color:var(--fg-4);max-width:560px;margin:0 auto;line-height:1.7;}
 
-/* ── STAT CARDS ── */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:32px;}
-.stat{
-  background:var(--bg-2);border:1px solid var(--line);
-  border-radius:var(--radius);padding:18px 16px;
-  transition:border-color 0.2s,box-shadow 0.2s;
+/* ── GLASS CARD ── */
+.card{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius-lg);padding:24px;
+  backdrop-filter:blur(12px);
+  transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;
 }
-.stat:hover{border-color:var(--accent);box-shadow:0 0 16px var(--accent-bg);}
-.stat-val{font-weight:800;font-size:34px;line-height:1;margin-bottom:6px;}
-.stat-val.accent{color:var(--accent);}
+.card:hover{border-color:var(--line-2);}
+.card-accent{border-color:rgba(62,240,224,0.15);}
+.card-accent:hover{border-color:rgba(62,240,224,0.35);box-shadow:0 0 24px var(--accent-bg);}
+.card-hot{border-color:rgba(255,143,92,0.12);}
+.card-hot:hover{border-color:rgba(255,143,92,0.30);box-shadow:0 0 24px var(--hot-bg);}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.card-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.card-icon.teal{background:var(--accent-bg);border:1px solid rgba(62,240,224,0.12);}
+.card-icon.hot{background:var(--hot-bg);border:1px solid rgba(255,143,92,0.12);}
+.card-icon.purple{background:var(--purple-bg);border:1px solid rgba(160,122,255,0.12);}
+.card-icon.green{background:var(--green-bg);border:1px solid rgba(82,240,160,0.12);}
+.card-title{font-weight:700;font-size:17px;color:var(--fg);}
+.card-subtitle{font-family:var(--mono);font-size:12px;color:var(--fg-4);}
+
+/* ── STAT GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px;}
+.stat-card{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);padding:20px 16px;text-align:center;
+  backdrop-filter:blur(12px);transition:all 0.2s;
+}
+.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px var(--accent-bg);}
+.stat-val{font-weight:800;font-size:36px;line-height:1;margin-bottom:6px;}
+.stat-val.teal{color:var(--accent);}
 .stat-val.hot{color:var(--hot);}
 .stat-val.fg{color:var(--fg);}
 .stat-val.green{color:var(--green);}
+.stat-val.purple{color:var(--purple);}
 .stat-lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-3);}
 
-/* ── META CHIPS ── */
-.meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;}
-.chip{
-  display:flex;align-items:center;gap:7px;
-  font-size:14px;color:var(--fg-3);
-  padding:7px 14px;border-radius:8px;
-  background:var(--bg-2);border:1px solid var(--line);
+/* ── TRACK CARDS ── */
+.track-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.track-card{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px;
+  backdrop-filter:blur(12px);transition:all 0.2s;
+  display:flex;align-items:center;gap:14px;
 }
-.chip .v{color:var(--fg);font-weight:600;}
-.chip .e{font-size:16px;}
-
-/* ── TRACK LIST ── */
-.track-grid{display:flex;flex-direction:column;gap:8px;}
-.track-row{
-  display:grid;grid-template-columns:44px 1fr auto auto auto;gap:12px;align-items:center;
-  padding:14px 18px;border-radius:var(--radius);
-  background:var(--bg-2);border:1px solid var(--line);
-  transition:border-color 0.15s,transform 0.1s;
-}
-.track-row:hover{border-color:var(--accent);transform:translateX(3px);}
-.track-ico{font-size:24px;text-align:center;}
-.track-name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.track-sub{font-family:var(--mono);font-size:12px;color:var(--fg-4);}
-.track-stats{display:flex;gap:10px;}
-.track-stat{font-family:var(--mono);font-size:12px;color:var(--fg-3);white-space:nowrap;}
-.track-stat .n{color:var(--fg);font-weight:500;}
-.track-badges{display:flex;gap:6px;}
-.badge{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:4px;letter-spacing:0.04em;}
-.badge-arm{color:var(--red);background:rgba(255,107,122,0.10);border:1px solid rgba(255,107,122,0.20);}
+.track-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 20px var(--accent-bg);}
+.track-emoji{font-size:28px;flex-shrink:0;}
+.track-info{flex:1;min-width:0;}
+.track-name{font-weight:600;font-size:16px;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.track-type{font-family:var(--mono);font-size:12px;color:var(--fg-4);}
+.track-nums{display:flex;gap:12px;margin-top:6px;}
+.track-num{font-family:var(--mono);font-size:12px;color:var(--fg-3);}
+.track-num .n{color:var(--accent);font-weight:600;}
+.track-badges{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.badge{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:5px;font-weight:500;}
+.badge-arm{color:var(--red);background:var(--red-bg);border:1px solid rgba(255,107,122,0.15);}
 .badge-mute{color:var(--fg-4);background:rgba(160,224,232,0.06);border:1px solid var(--line);}
-.badge-solo{color:var(--yellow);background:rgba(255,224,102,0.10);border:1px solid rgba(255,224,102,0.20);}
+.badge-solo{color:var(--yellow);background:var(--yellow-bg);border:1px solid rgba(255,224,102,0.15);}
 
-/* ── CLIPS TABLE ── */
-.clip-section{margin-bottom:24px;}
-.clip-track-name{font-weight:600;font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--fg);}
-.table-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+/* ── CLIP TABLE ── */
+.clip-group{margin-bottom:20px;}
+.clip-group-title{font-weight:600;font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--fg);}
+.table-card{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;
+  backdrop-filter:blur(12px);
+}
 table{width:100%;border-collapse:collapse;font-size:14px;}
-thead{background:var(--bg-2);}
-th{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-3);text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);}
+thead{background:rgba(19,52,59,0.6);}
+th{font-family:var(--mono);font-size:11px;letter-spacing:0.10em;text-transform:uppercase;color:var(--fg-3);text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);}
 td{padding:10px 16px;border-bottom:1px solid var(--line);color:var(--fg-2);}
 tr:last-child td{border-bottom:none;}
 tbody tr{transition:background 0.1s;}
-tbody tr:hover{background:var(--bg-2);}
+tbody tr:hover{background:rgba(62,240,224,0.04);}
 
 /* ── DEVICE RACK ── */
-.dev-group{margin-bottom:20px;}
-.dev-group-name{font-weight:600;font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--fg);}
-.dev-rack{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;}
-.dev-header{
-  padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;background:var(--bg-2);transition:background 0.15s;
+.dev-group{margin-bottom:16px;}
+.dev-group-title{font-weight:600;font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--fg);}
+.dev-rack{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;margin-bottom:8px;
+  backdrop-filter:blur(12px);
 }
-.dev-header:hover{background:var(--bg-3);}
+.dev-header{
+  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:background 0.15s;
+}
+.dev-header:hover{background:rgba(62,240,224,0.04);}
 .dev-h-left{display:flex;align-items:center;gap:12px;}
-.dev-emoji{font-size:18px;}
-.dev-name{font-weight:600;font-size:15px;}
-.dev-type{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:5px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);}
+.dev-emoji{font-size:20px;}
+.dev-name{font-weight:600;font-size:15px;color:var(--fg);}
+.dev-type{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);}
 .dev-count{font-family:var(--mono);font-size:11px;color:var(--fg-4);}
 .dev-chevron{color:var(--fg-4);transition:transform 0.2s;font-size:13px;}
 .dev-rack.open .dev-chevron{transform:rotate(180deg);}
-.dev-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;background:var(--bg-1);}
+.dev-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;}
 .dev-rack.open .dev-body{max-height:5000px;}
 
-/* Switches row */
-.dev-switches{display:flex;flex-wrap:wrap;gap:5px;padding:12px 16px;border-bottom:1px solid var(--line);}
+/* Switches */
+.dev-switches{display:flex;flex-wrap:wrap;gap:5px;padding:14px 18px;border-bottom:1px solid var(--line);}
 .sw{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:5px;}
-.sw-on{background:rgba(82,240,160,0.10);color:var(--green);}
+.sw-on{background:var(--green-bg);color:var(--green);}
 .sw-off{background:rgba(160,224,232,0.06);color:var(--fg-4);}
 .sw-other{background:var(--hot-bg);color:var(--hot);}
 .sw-dot{width:6px;height:6px;border-radius:50%;}
@@ -258,13 +354,13 @@ tbody tr:hover{background:var(--bg-2);}
 .sw-off .sw-dot{background:var(--fg-4);}
 .sw-other .sw-dot{background:var(--hot);}
 
-/* Knob grid */
+/* Knobs */
 .dev-knobs{display:flex;flex-wrap:wrap;gap:4px;padding:14px 12px;}
 .knob{
   width:72px;text-align:center;padding:8px 4px 6px;border-radius:8px;
   transition:background 0.15s;
 }
-.knob:hover{background:rgba(160,224,232,0.04);}
+.knob:hover{background:rgba(62,240,224,0.04);}
 .knob-ring-wrap{position:relative;width:36px;height:36px;margin:0 auto 5px;}
 .knob-ring{
   position:absolute;top:2px;left:2px;right:2px;bottom:2px;
@@ -282,62 +378,81 @@ tbody tr:hover{background:var(--bg-2);}
 .knob-val{font-family:var(--mono);font-size:10px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* Chains */
-.dev-chains{padding:10px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.dev-chains{padding:10px 18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .chain-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--fg-4);}
 .chain-badge{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:5px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);}
 
 /* ── SCENES ── */
-.scene-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.scene-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
 .scene-card{
-  padding:14px 16px;border-radius:var(--radius);
-  background:var(--bg-2);border:1px solid var(--line);
-  transition:border-color 0.15s;
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px;
+  backdrop-filter:blur(12px);transition:all 0.2s;
 }
-.scene-card:hover{border-color:var(--accent);}
-.scene-num{font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-bottom:3px;}
-.scene-name{font-weight:600;font-size:15px;color:var(--fg);}
+.scene-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.scene-num{font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-bottom:4px;}
+.scene-name{font-weight:600;font-size:16px;color:var(--fg);}
 
 /* ── NOTES ── */
 .notes-box{
   width:100%;min-height:200px;padding:18px;
   font-family:var(--sans);font-size:16px;color:var(--fg);
-  background:var(--bg-2);border:1px solid var(--line-2);
-  border-radius:var(--radius);outline:none;resize:vertical;
+  background:var(--glass);border:1px solid var(--line-2);
+  border-radius:var(--radius-lg);outline:none;resize:vertical;
   line-height:1.7;transition:border-color 0.2s,box-shadow 0.2s;
+  backdrop-filter:blur(12px);
 }
 .notes-box::placeholder{color:var(--fg-4);}
 .notes-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
-.notes-hint{font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-top:8px;}
+.notes-hint{font-family:var(--mono);font-size:12px;color:var(--fg-4);margin-top:10px;}
 
 /* ── INSIGHTS ── */
-.insight-list{display:flex;flex-direction:column;gap:10px;}
+.insight-list{display:flex;flex-direction:column;gap:12px;}
 .insight{
-  padding:14px 18px;border-radius:var(--radius);
-  border-left:3px solid;display:flex;gap:12px;align-items:flex-start;
+  padding:16px 20px;border-radius:var(--radius-lg);
+  border-left:3px solid;display:flex;gap:14px;align-items:flex-start;
+  background:var(--glass);backdrop-filter:blur(12px);
 }
-.insight.tip{background:var(--accent-bg);border-color:var(--accent);}
-.insight.warn{background:var(--hot-bg);border-color:var(--hot);}
-.insight.info{background:rgba(160,224,232,0.04);border-color:var(--fg-4);}
-.insight-icon{font-size:22px;flex-shrink:0;}
-.insight-text{font-size:15px;color:var(--fg-2);line-height:1.6;}
+.insight.tip{border-color:var(--accent);background:linear-gradient(135deg,var(--accent-bg),var(--glass));}
+.insight.warn{border-color:var(--hot);background:linear-gradient(135deg,var(--hot-bg),var(--glass));}
+.insight.info{border-color:var(--fg-4);background:linear-gradient(135deg,rgba(160,224,232,0.04),var(--glass));}
+.insight-icon{font-size:24px;flex-shrink:0;}
+.insight-text{font-size:15px;color:var(--fg-2);line-height:1.7;}
 
 /* ── FOOTER ── */
 .report-footer{
-  text-align:center;padding:36px 0 18px;
-  border-top:1px solid var(--line);margin-top:36px;
-  font-family:var(--mono);font-size:12px;color:var(--fg-4);
+  text-align:center;padding:48px 0 24px;
+  border-top:1px solid var(--line);margin-top:48px;
 }
-.report-footer a{color:var(--accent);transition:color 0.15s;}
-.report-footer a:hover{color:var(--fg);}
-.report-footer .name{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--fg-2);margin-bottom:5px;}
+.footer-brand{font-family:var(--display);font-weight:700;font-size:20px;color:var(--fg);margin-bottom:8px;}
+.footer-sub{font-family:var(--mono);font-size:13px;color:var(--fg-4);line-height:1.8;}
+.footer-sub a{color:var(--accent);transition:color 0.15s;}
+.footer-sub a:hover{color:var(--fg);}
+
+/* ── DIVIDER ── */
+.section-divider{
+  border:none;height:1px;margin:0;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.15;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounce{0%,20%,50%,80%,100%{transform:translateX(-50%) translateY(0);}40%{transform:translateX(-50%) translateY(-10px);}60%{transform:translateX(-50%) translateY(-5px);}}
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .sidebar{display:none;}
-  .panel{padding:24px 18px 44px;}
-  .track-row{grid-template-columns:36px 1fr auto;}
-  .track-stats,.track-badges{display:none;}
-  .stats-row{grid-template-columns:repeat(2,1fr);}
+@media(max-width:768px){
+  .top-nav{padding:12px 16px;gap:12px;}
+  .nav-links{gap:2px;}
+  .nav-link{font-size:13px;padding:5px 10px;}
+  .hero{min-height:70vh;padding:100px 16px 60px;}
+  .hero-title{font-size:clamp(32px,6vw,52px);}
+  .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .page-content{padding:0 16px 60px;}
+  .section{padding:40px 0;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .track-grid{grid-template-columns:1fr;}
+  .scene-grid{grid-template-columns:repeat(2,1fr);}
 }
 `;
 
@@ -346,18 +461,23 @@ tbody tr:hover{background:var(--bg-2);}
 // ══════════════════════════════════════
 
 const JS = `
-  // Navigation
-  const navItems = document.querySelectorAll('.nav-item');
-  const panels = document.querySelectorAll('.panel');
-  navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const target = item.dataset.panel;
-      navItems.forEach(n => n.classList.remove('active'));
-      item.classList.add('active');
-      panels.forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-' + target).classList.add('active');
+  // Scroll-spy for nav links
+  const sections = document.querySelectorAll('.section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  function updateNav() {
+    let current = '';
+    sections.forEach(s => {
+      const top = s.offsetTop - 120;
+      if (window.scrollY >= top) current = s.id;
     });
-  });
+    navLinks.forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+    });
+  }
+  window.addEventListener('scroll', updateNav, {passive: true});
+  updateNav();
 
   // Device accordion
   document.querySelectorAll('.dev-header').forEach(h => {
@@ -374,94 +494,106 @@ const JS = `
 `;
 
 // ══════════════════════════════════════
-// RENDER SECTIONS
+// HERO
 // ══════════════════════════════════════
 
-function renderSidebar(data: ProjectSnapshot): string {
-  const o = data.overview;
-  return `<aside class="sidebar">
-    <div class="sidebar-brand">
-      <span class="sidebar-brand-icon">📸</span>
-      <div>
-        <div class="sidebar-brand-text">Snapshot</div>
-        <div class="sidebar-brand-ver">${o.tempo} BPM · ${o.trackCount} tracks</div>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-item active" data-panel="overview"><span class="nav-icon">🎯</span> Overview</div>
-      <div class="nav-item" data-panel="tracks"><span class="nav-icon">🎵</span> Tracks <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--fg-4)">${o.trackCount}</span></div>
-      <div class="nav-item" data-panel="clips"><span class="nav-icon">🎹</span> Clips <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--fg-4)">${o.totalClipCount}</span></div>
-      <div class="nav-item" data-panel="devices"><span class="nav-icon">🔌</span> Devices <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--fg-4)">${o.totalDeviceCount}</span></div>
-      <div class="nav-item" data-panel="scenes"><span class="nav-icon">🎬</span> Scenes <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--fg-4)">${o.sceneCount}</span></div>
-      <div class="nav-item" data-panel="notes"><span class="nav-icon">📝</span> Notes</div>
-      <div class="nav-item" data-panel="insights"><span class="nav-icon">💡</span> Insights <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--fg-4)">${data.suggestions.length}</span></div>
-    </nav>
-    <div class="sidebar-footer">
-      <div style="color:var(--fg-3);margin-bottom:4px;">Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a></div>
-      ${data.generatedDate}
-    </div>
-  </aside>`;
-}
-
-function renderHeader(data: ProjectSnapshot): string {
-  const o = data.overview;
-  return `<div class="header-bar">
-    <div class="header-left">
-      <span class="header-title">📸 Project Snapshot</span>
-      <span class="header-badge">${o.tempo} BPM</span>
-      <span class="header-badge">${o.signatureNumerator}/${o.signatureDenominator}</span>
-    </div>
-    <div class="header-right">
-      <button class="btn-scroll" onclick="window.print()">🖨️ Print</button>
-    </div>
-  </div>`;
-}
-
-function renderOverview(data: ProjectSnapshot): string {
+function renderHero(data: ProjectSnapshot): string {
   const o = data.overview;
   const scaleDisplay = o.scaleName && o.scaleName !== "None"
     ? `${NOTE_NAMES[o.rootNote]} ${o.scaleName}` : "No scale set";
 
-  return `<div class="section-head">
-    <span class="section-eyebrow">PROJECT OVERVIEW</span>
+  return `<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="hero-content">
+    <div class="hero-badge">📸 Project Snapshot</div>
+    <h1 class="hero-title">
+      ${o.tempo} <span class="grad">BPM</span>
+    </h1>
+    <p class="hero-sub">
+      Generated on <strong>${data.generatedDate}</strong> ·
+      <strong>${o.trackCount}</strong> tracks ·
+      <strong>${o.totalClipCount}</strong> clips ·
+      <strong>${o.totalDeviceCount}</strong> devices
+    </p>
+    <div class="hero-meta">
+      <div class="hero-chip"><span class="e">🎵</span> <span class="v">${scaleDisplay}</span></div>
+      <div class="hero-chip"><span class="e">⏱️</span> <span class="v">${o.signatureNumerator}/${o.signatureDenominator}</span></div>
+      <div class="hero-chip"><span class="e">🎹</span> <span class="v">${o.midiTrackCount}</span> MIDI</div>
+      <div class="hero-chip"><span class="e">🎙️</span> <span class="v">${o.audioTrackCount}</span> Audio</div>
+      <div class="hero-chip"><span class="e">🎬</span> <span class="v">${o.sceneCount}</span> scenes</div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val hot">${o.tempo}</div>
+        <div class="hero-stat-lbl">BPM</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val teal">${o.trackCount}</div>
+        <div class="hero-stat-lbl">Tracks</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val fg">${o.totalClipCount}</div>
+        <div class="hero-stat-lbl">Clips</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val green">${o.totalDeviceCount}</div>
+        <div class="hero-stat-lbl">Devices</div>
+      </div>
+    </div>
   </div>
-
-  <div class="stats-row">
-    <div class="stat"><div class="stat-val hot">${o.tempo}</div><div class="stat-lbl">BPM</div></div>
-    <div class="stat"><div class="stat-val accent">${o.audioTrackCount}</div><div class="stat-lbl">Audio Tracks</div></div>
-    <div class="stat"><div class="stat-val accent">${o.midiTrackCount}</div><div class="stat-lbl">MIDI Tracks</div></div>
-    <div class="stat"><div class="stat-val fg">${o.totalClipCount}</div><div class="stat-lbl">Total Clips</div></div>
-    <div class="stat"><div class="stat-val hot">${o.totalDeviceCount}</div><div class="stat-lbl">Devices</div></div>
-    <div class="stat"><div class="stat-val accent">${o.sceneCount}</div><div class="stat-lbl">Scenes</div></div>
-    <div class="stat"><div class="stat-val fg">${o.cuePointCount}</div><div class="stat-lbl">Cue Points</div></div>
-    <div class="stat"><div class="stat-val green">${o.signatureNumerator}/${o.signatureDenominator}</div><div class="stat-lbl">Time Sig</div></div>
-  </div>
-
-  <div class="meta-row">
-    <div class="chip"><span class="e">🎵</span> <span class="v">${scaleDisplay}</span></div>
-    <div class="chip"><span class="e">⏱️</span> ${o.tempo} BPM</div>
-    <div class="chip"><span class="e">🎹</span> <span class="v">${o.midiTrackCount}</span> MIDI</div>
-    <div class="chip"><span class="e">🎙️</span> <span class="v">${o.audioTrackCount}</span> Audio</div>
-    <div class="chip"><span class="e">🎬</span> <span class="v">${o.sceneCount}</span> scenes</div>
-  </div>
-
-  <p style="font-size:15px;color:var(--fg-3);max-width:640px;margin-top:18px;line-height:1.7;">
-    This snapshot was generated on <strong style="color:var(--fg)">${data.generatedDate}</strong>.
-    Navigate using the sidebar to explore tracks, clips, devices, scenes, and personalized insights for your project.
-  </p>`;
+  <div class="hero-scroll">↓</div>
+</section>`;
 }
 
-function renderTracksPanel(data: ProjectSnapshot): string {
-  return `<div class="section-head">
-    <span class="section-eyebrow">TRACKS</span>
-    <span class="section-title">Your <span class="a">Tracks</span></span>
+// ══════════════════════════════════════
+// OVERVIEW SECTION
+// ══════════════════════════════════════
+
+function renderOverviewSection(data: ProjectSnapshot): string {
+  const o = data.overview;
+
+  return `<div class="section-divider"></div>
+<section class="section" id="overview">
+  <div class="section-head">
+    <div class="section-badge teal">🎯 Overview</div>
+    <h2 class="section-title">Project <span class="grad">Overview</span></h2>
+    <p class="section-desc">A complete breakdown of your Ableton Live project at a glance</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val hot">${o.tempo}</div><div class="stat-lbl">BPM</div></div>
+    <div class="stat-card"><div class="stat-val teal">${o.audioTrackCount}</div><div class="stat-lbl">Audio Tracks</div></div>
+    <div class="stat-card"><div class="stat-val teal">${o.midiTrackCount}</div><div class="stat-lbl">MIDI Tracks</div></div>
+    <div class="stat-card"><div class="stat-val fg">${o.totalClipCount}</div><div class="stat-lbl">Total Clips</div></div>
+    <div class="stat-card"><div class="stat-val hot">${o.totalDeviceCount}</div><div class="stat-lbl">Devices</div></div>
+    <div class="stat-card"><div class="stat-val teal">${o.sceneCount}</div><div class="stat-lbl">Scenes</div></div>
+    <div class="stat-card"><div class="stat-val fg">${o.cuePointCount}</div><div class="stat-lbl">Cue Points</div></div>
+    <div class="stat-card"><div class="stat-val purple">${o.signatureNumerator}/${o.signatureDenominator}</div><div class="stat-lbl">Time Signature</div></div>
+  </div>
+</section>`;
+}
+
+// ══════════════════════════════════════
+// TRACKS SECTION
+// ══════════════════════════════════════
+
+function renderTracksSection(data: ProjectSnapshot): string {
+  return `<div class="section-divider"></div>
+<section class="section" id="tracks">
+  <div class="section-head">
+    <div class="section-badge hot">🎵 Tracks</div>
+    <h2 class="section-title">Your <span class="grad">Tracks</span></h2>
+    <p class="section-desc">${data.tracks.length} tracks in your project — audio, MIDI, return, and master</p>
   </div>
   <div class="track-grid">
-    ${data.tracks.map(t => renderTrackRow(t)).join("")}
-  </div>`;
+    ${data.tracks.map(t => renderTrackCard(t)).join("")}
+  </div>
+</section>`;
 }
 
-function renderTrackRow(t: SnapshotTrack): string {
+function renderTrackCard(t: SnapshotTrack): string {
   const emoji = getTrackTypeEmoji(t.type);
   const typeName = getTrackTypeName(t.type);
   const badges: string[] = [];
@@ -469,33 +601,41 @@ function renderTrackRow(t: SnapshotTrack): string {
   if (t.mute) badges.push(`<span class="badge badge-mute">🔇 MUTE</span>`);
   if (t.solo) badges.push(`<span class="badge badge-solo">🎧 SOLO</span>`);
 
-  return `<div class="track-row">
-    <div class="track-ico">${emoji}</div>
-    <div>
+  return `<div class="track-card">
+    <div class="track-emoji">${emoji}</div>
+    <div class="track-info">
       <div class="track-name">${esc(t.name)}</div>
-      <div class="track-sub">${typeName}</div>
+      <div class="track-type">${typeName}</div>
+      <div class="track-nums">
+        <span class="track-num">🎹 <span class="n">${t.clipCount}</span></span>
+        <span class="track-num">🔌 <span class="n">${t.deviceCount}</span></span>
+      </div>
+      ${badges.length > 0 ? `<div class="track-badges">${badges.join("")}</div>` : ""}
     </div>
-    <div class="track-stats">
-      <span class="track-stat">🎹 <span class="n">${t.clipCount}</span></span>
-      <span class="track-stat">🔌 <span class="n">${t.deviceCount}</span></span>
-    </div>
-    <div class="track-badges">${badges.join("")}</div>
   </div>`;
 }
 
-function renderClipsPanel(data: ProjectSnapshot): string {
+// ══════════════════════════════════════
+// CLIPS SECTION
+// ══════════════════════════════════════
+
+function renderClipsSection(data: ProjectSnapshot): string {
   const tracksWithClips = data.tracks.filter(t => t.clips.length > 0);
-  return `<div class="section-head">
-    <span class="section-eyebrow">CLIPS</span>
-    <span class="section-title">Clip <span class="a">Details</span></span>
+  return `<div class="section-divider"></div>
+<section class="section" id="clips">
+  <div class="section-head">
+    <div class="section-badge purple">🎹 Clips</div>
+    <h2 class="section-title">Clip <span class="grad">Details</span></h2>
+    <p class="section-desc">${data.overview.totalClipCount} clips across your project — expand to see warp, loop, and MIDI info</p>
   </div>
-  ${tracksWithClips.map(t => renderClipSection(t)).join("")}`;
+  ${tracksWithClips.map(t => renderClipGroup(t)).join("")}
+</section>`;
 }
 
-function renderClipSection(track: SnapshotTrack): string {
-  return `<div class="clip-section">
-    <div class="clip-track-name">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
-    <div class="table-wrap"><table>
+function renderClipGroup(track: SnapshotTrack): string {
+  return `<div class="clip-group">
+    <div class="clip-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
+    <div class="table-card"><table>
       <thead><tr><th>Name</th><th>Type</th><th>Warp</th><th>Loop</th><th>MIDI</th></tr></thead>
       <tbody>${track.clips.map(c => renderClipRow(c)).join("")}</tbody>
     </table></div>
@@ -516,18 +656,26 @@ function renderClipRow(c: SnapshotClip): string {
   </tr>`;
 }
 
-function renderDevicesPanel(data: ProjectSnapshot): string {
+// ══════════════════════════════════════
+// DEVICES SECTION
+// ══════════════════════════════════════
+
+function renderDevicesSection(data: ProjectSnapshot): string {
   const tracksWithDevices = data.tracks.filter(t => t.devices.length > 0);
-  return `<div class="section-head">
-    <span class="section-eyebrow">DEVICES</span>
-    <span class="section-title">Devices & <span class="a">Parameters</span></span>
+  return `<div class="section-divider"></div>
+<section class="section" id="devices">
+  <div class="section-head">
+    <div class="section-badge teal">🔌 Devices</div>
+    <h2 class="section-title">Devices & <span class="grad">Parameters</span></h2>
+    <p class="section-desc">${data.overview.totalDeviceCount} devices with their parameters — click to expand</p>
   </div>
-  ${tracksWithDevices.map(t => renderDevGroup(t)).join("")}`;
+  ${tracksWithDevices.map(t => renderDevGroup(t)).join("")}
+</section>`;
 }
 
 function renderDevGroup(track: SnapshotTrack): string {
   return `<div class="dev-group">
-    <div class="dev-group-name">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
+    <div class="dev-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
     ${track.devices.map(d => renderDevRack(d)).join("")}
   </div>`;
 }
@@ -615,10 +763,17 @@ function renderSwitch(param: SnapshotParameter): string {
   return `<div class="sw ${cls}"><div class="sw-dot"></div>${esc(param.name)}</div>`;
 }
 
-function renderScenesPanel(data: ProjectSnapshot): string {
-  let html = `<div class="section-head">
-    <span class="section-eyebrow">SCENES & MARKERS</span>
-    <span class="section-title">Scenes & <span class="a">Cue Points</span></span>
+// ══════════════════════════════════════
+// SCENES SECTION
+// ══════════════════════════════════════
+
+function renderScenesSection(data: ProjectSnapshot): string {
+  let html = `<div class="section-divider"></div>
+<section class="section" id="scenes">
+  <div class="section-head">
+    <div class="section-badge green">🎬 Scenes</div>
+    <h2 class="section-title">Scenes & <span class="grad">Cue Points</span></h2>
+    <p class="section-desc">Arrangement markers and scene names in your project</p>
   </div>`;
 
   if (data.scenes.length > 0) {
@@ -631,38 +786,51 @@ function renderScenesPanel(data: ProjectSnapshot): string {
   }
 
   if (data.cuePoints.length > 0) {
-    html += `<div style="margin-top:24px;"><div class="section-eyebrow" style="margin-bottom:12px;">📍 CUE POINTS</div>
+    html += `<h3 style="font-weight:600;font-size:18px;margin:28px 0 14px;color:var(--fg-3);">📍 Cue Points</h3>
     <div class="scene-grid">
       ${data.cuePoints.map((cp, i) => `<div class="scene-card">
         <div class="scene-num">CUE ${i + 1}</div>
         <div class="scene-name">📍 ${esc(cp.name)}</div>
       </div>`).join("")}
-    </div></div>`;
+    </div>`;
   }
 
   if (data.scenes.length === 0 && data.cuePoints.length === 0) {
-    html += `<p style="color:var(--fg-3);font-size:15px;">No scenes or cue points found in this project.</p>`;
+    html += `<p style="color:var(--fg-4);font-size:16px;text-align:center;">No scenes or cue points found in this project.</p>`;
   }
 
+  html += `</section>`;
   return html;
 }
 
-function renderNotesPanel(): string {
-  return `<div class="section-head">
-    <span class="section-eyebrow">NOTES</span>
-    <span class="section-title">Your <span class="a">Notes</span></span>
+// ══════════════════════════════════════
+// NOTES SECTION
+// ══════════════════════════════════════
+
+function renderNotesSection(): string {
+  return `<div class="section-divider"></div>
+<section class="section" id="notes">
+  <div class="section-head">
+    <div class="section-badge hot">📝 Notes</div>
+    <h2 class="section-title">Your <span class="grad">Notes</span></h2>
+    <p class="section-desc">Write down ideas, progress, or anything you want to remember for next session</p>
   </div>
-  <p style="color:var(--fg-3);font-size:15px;margin-bottom:16px;line-height:1.7;">
-    Write down where you left off, what's working, what needs work, or any ideas for your next session.
-  </p>
   <textarea id="project-notes" class="notes-box" placeholder="e.g. 'The bass line in Track 3 needs variation. Try adding a filter sweep on the drop. The pad sounds great — keep that. Need to finish the arrangement...'"></textarea>
-  <div class="notes-hint">💾 Notes are saved in your browser and persist between sessions.</div>`;
+  <div class="notes-hint">💾 Notes are saved in your browser and persist between sessions.</div>
+</section>`;
 }
 
-function renderInsightsPanel(data: ProjectSnapshot): string {
-  return `<div class="section-head">
-    <span class="section-eyebrow">INSIGHTS</span>
-    <span class="section-title">Suggested <span class="a">Next Steps</span></span>
+// ══════════════════════════════════════
+// INSIGHTS SECTION
+// ══════════════════════════════════════
+
+function renderInsightsSection(data: ProjectSnapshot): string {
+  return `<div class="section-divider"></div>
+<section class="section" id="insights">
+  <div class="section-head">
+    <div class="section-badge purple">💡 Insights</div>
+    <h2 class="section-title">Suggested <span class="grad">Next Steps</span></h2>
+    <p class="section-desc">Personalized tips and recommendations based on your project</p>
   </div>
   <div class="insight-list">
     ${data.suggestions.map(s => `<div class="insight ${s.type === "tip" ? "tip" : s.type === "warning" ? "warn" : "info"}">
@@ -670,11 +838,20 @@ function renderInsightsPanel(data: ProjectSnapshot): string {
       <div class="insight-text">${esc(s.text)}</div>
     </div>`).join("")}
   </div>
+</section>`;
+}
 
-  <div class="report-footer">
-    <div class="name">📸 Project Snapshot</div>
-    <div>Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a></div>
-    <div style="margin-top:5px;">Generated on ${data.generatedDate}</div>
+// ══════════════════════════════════════
+// FOOTER
+// ══════════════════════════════════════
+
+function renderFooter(data: ProjectSnapshot): string {
+  return `<div class="report-footer">
+    <div class="footer-brand">📸 Project Snapshot</div>
+    <div class="footer-sub">
+      Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a><br>
+      Generated on ${data.generatedDate}
+    </div>
   </div>`;
 }
 
