@@ -1,9 +1,10 @@
 // ──────────────────────────────────────────────
-// Project Snapshot — Deep Ink Luxury Template
-// Generates the full HTML report
+// Project Snapshot — Redesigned Template
+// Professional Audio Engineering Dashboard
+// Deep Ink Luxury · Frontend Design Skill Applied
 // ──────────────────────────────────────────────
 
-import type { ProjectSnapshot, SnapshotTrack, SnapshotClip, SnapshotDevice, SnapshotParameter, SnapshotSuggestion } from "./types.js";
+import type { ProjectSnapshot, SnapshotTrack, SnapshotClip, SnapshotDevice, SnapshotParameter } from "./types.js";
 import { getTrackTypeName, getTrackTypeEmoji, midiNoteToName } from "./types.js";
 
 export function renderTemplate(data: ProjectSnapshot): string {
@@ -17,31 +18,25 @@ export function renderTemplate(data: ProjectSnapshot): string {
   <title>📸 Project Snapshot — ${o.tempo} BPM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
 ${CSS}
   </style>
 </head>
 <body>
-
-${renderNav(data)}
-${renderHero(data)}
-${renderStats(data)}
-${renderTracks(data)}
-${renderClips(data)}
-${renderDevices(data)}
-${renderScenes(data)}
-${renderNotes()}
-${renderSuggestions(data)}
-${renderFooter(data)}
-
-<!-- Floating buttons -->
-<div class="floating-buttons">
-  <button class="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Scroll to top">⬆</button>
-  <button class="fab" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})" title="Scroll to bottom">⬇</button>
-  <button class="fab fab-share" onclick="shareReport()" title="Share">📋</button>
-</div>
-
+  <div class="app">
+    ${renderSidebar(data)}
+    <main class="main">
+      ${renderHeader(data)}
+      <div class="panel active" id="panel-overview">${renderOverview(data)}</div>
+      <div class="panel" id="panel-tracks">${renderTracksPanel(data)}</div>
+      <div class="panel" id="panel-clips">${renderClipsPanel(data)}</div>
+      <div class="panel" id="panel-devices">${renderDevicesPanel(data)}</div>
+      <div class="panel" id="panel-scenes">${renderScenesPanel(data)}</div>
+      <div class="panel" id="panel-notes">${renderNotesPanel()}</div>
+      <div class="panel" id="panel-insights">${renderInsightsPanel(data)}</div>
+    </main>
+  </div>
 <script>
 ${JS}
 </script>
@@ -50,237 +45,300 @@ ${JS}
 }
 
 // ══════════════════════════════════════
-// CSS
+// CSS — Refined Audio Dashboard
 // ══════════════════════════════════════
 
 const CSS = `
-    :root {
-      --ink:      #00131a;
-      --ink-2:    #041f2a;
-      --ink-3:    #0a2d3b;
-      --ink-4:    #103847;
-      --paper:       #fcf1e5;
-      --paper-dim:   rgba(252, 241, 229, 0.72);
-      --paper-mute:  rgba(252, 241, 229, 0.50);
-      --paper-faint: rgba(252, 241, 229, 0.30);
-      --paper-ghost: rgba(252, 241, 229, 0.08);
-      --teal:     #48d0ce;
-      --teal-dim: #2dd4bf;
-      --teal-bg:  rgba(72, 208, 206, 0.08);
-      --teal-glow:rgba(72, 208, 206, 0.15);
-      --flame:     #fc6b3c;
-      --flame-2:   #f98d27;
-      --flame-bg:  rgba(252, 107, 60, 0.08);
-      --flame-glow:rgba(252, 107, 60, 0.15);
-      --line:   rgba(252, 241, 229, 0.10);
-      --line-2: rgba(252, 241, 229, 0.16);
-      --line-3: rgba(252, 241, 229, 0.22);
-      --display: 'Nunito', sans-serif;
-      --sans:     'Space Grotesk', system-ui, sans-serif;
-      --mono:     'JetBrains Mono', ui-monospace, monospace;
-      --serif:    'Instrument Serif', Georgia, serif;
-      --max-width: 1200px;
-      --wrap-pad: 40px;
-      --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 20px;
-      --radius-pill: 999px;
-      --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
-    }
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; background: var(--ink); }
-    body {
-      font-family: var(--sans);
-      color: var(--paper);
-      background: var(--ink);
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
-    a { color: inherit; text-decoration: none; }
-    button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--ink); }
-    ::-webkit-scrollbar-thumb { background: var(--paper-faint); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--paper-mute); }
-    h1 { font-family: var(--display); font-weight: 700; font-size: clamp(36px, 5vw, 64px); line-height: 0.98; letter-spacing: -0.008em; }
-    h1 .teal { color: var(--teal); }
-    h2 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 3.5vw, 44px); line-height: 1.0; letter-spacing: -0.01em; margin-bottom: 32px; }
-    h2 .teal { color: var(--teal); }
-    h3 { font-family: var(--display); font-weight: 600; font-size: 18px; line-height: 1.2; }
-    h4 { font-family: var(--display); font-weight: 600; font-size: 15px; line-height: 1.3; }
-    .mono { font-family: var(--mono); letter-spacing: 0.02em; }
-    .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper-mute); display: inline-flex; align-items: center; gap: 10px; }
-    .eyebrow-dot::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
-    .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--wrap-pad); position: relative; }
-    .section { padding: 48px 0; position: relative; border-top: 1px solid var(--line); }
-    .section.no-border { border-top: none; }
+:root {
+  --bg-0: #060b10;
+  --bg-1: #0b1219;
+  --bg-2: #101a24;
+  --bg-3: #162230;
+  --bg-4: #1c2d3e;
+  --fg:       #e8e0d4;
+  --fg-2:     rgba(232,224,212,0.72);
+  --fg-3:     rgba(232,224,212,0.48);
+  --fg-4:     rgba(232,224,212,0.28);
+  --fg-5:     rgba(232,224,212,0.12);
+  --accent:   #4ad8d6;
+  --accent-2: #3be0c8;
+  --accent-bg:rgba(74,216,214,0.06);
+  --accent-g:rgba(74,216,214,0.18);
+  --hot:      #ff7b4a;
+  --hot-2:    #ff9e42;
+  --hot-bg:   rgba(255,123,74,0.06);
+  --hot-g:    rgba(255,123,74,0.15);
+  --green:    #3dd68c;
+  --red:      #ff5c6a;
+  --yellow:   #ffd044;
+  --line:     rgba(232,224,212,0.07);
+  --line-2:   rgba(232,224,212,0.12);
+  --radius:   10px;
+  --radius-lg:16px;
+  --sans:     'Outfit', system-ui, sans-serif;
+  --mono:     'IBM Plex Mono', ui-monospace, monospace;
+  --serif:    'Instrument Serif', Georgia, serif;
+  --sidebar-w: 220px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{background:var(--bg-0);scroll-behavior:smooth;}
+body{font-family:var(--sans);color:var(--fg);background:var(--bg-0);-webkit-font-smoothing:antialiased;line-height:1.5;overflow:hidden;height:100vh;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--fg-5);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--fg-4);}
 
-    /* NAV */
-    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(0, 19, 26, 0.82); backdrop-filter: blur(12px) saturate(130%); -webkit-backdrop-filter: blur(12px) saturate(130%); border-bottom: 1px solid var(--line); }
-    .nav-inner { max-width: var(--max-width); margin: 0 auto; padding: 12px var(--wrap-pad); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-    .nav-brand { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--paper); display: flex; align-items: center; gap: 10px; }
-    .nav-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
-    .nav-links { display: flex; gap: 20px; align-items: center; font-size: 13px; color: var(--paper-dim); list-style: none; flex-wrap: wrap; }
-    .nav-links a { transition: color 0.2s; padding: 4px 0; white-space: nowrap; }
-    .nav-links a:hover { color: var(--paper); }
+/* ── APP LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden;}
 
-    /* HERO */
-    .hero { display: flex; align-items: center; padding-top: 100px; padding-bottom: 20px; position: relative; overflow: hidden; }
-    .hero-content { max-width: 700px; position: relative; }
-    .hero .glow-teal { position: absolute; top: -100px; right: -50px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(72,208,206,0.15), transparent 70%); pointer-events: none; animation: glow-pulse 4s ease-in-out infinite; }
-    .hero .glow-flame { position: absolute; bottom: -80px; left: -100px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(252,107,60,0.12), transparent 70%); pointer-events: none; animation: glow-pulse 5s ease-in-out infinite; }
-    .hero-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 32px; }
-    .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--paper-dim); }
-    .hero-meta-item .emoji { font-size: 20px; }
-    .hero-meta-item .value { color: var(--paper); font-weight: 600; }
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--bg-1);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:0;
+  overflow-y:auto;
+}
+.sidebar-brand{
+  padding:20px 18px 16px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--line);
+}
+.sidebar-brand-icon{font-size:22px;}
+.sidebar-brand-text{font-weight:700;font-size:15px;color:var(--fg);}
+.sidebar-brand-ver{font-family:var(--mono);font-size:9px;color:var(--fg-4);margin-top:1px;}
 
-    /* STATS */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-    .stat-card { text-align: center; padding: 24px 16px; border: 1px solid var(--line); border-radius: var(--radius-md); background: linear-gradient(180deg, rgba(72,208,206,0.035), rgba(4,31,42,0.3)); transition: border-color 0.3s, transform 0.3s var(--ease-out); }
-    .stat-card:hover { border-color: var(--line-3); transform: translateY(-2px); }
-    .stat-num { font-family: var(--display); font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
-    .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper-mute); }
+.sidebar-nav{padding:12px 10px;flex:1;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--fg-3);
+  transition:all 0.15s;cursor:pointer;margin-bottom:2px;
+}
+.nav-item:hover{color:var(--fg-2);background:var(--fg-5);}
+.nav-item.active{color:var(--accent);background:var(--accent-bg);font-weight:600;}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
 
-    /* TRACK CARDS */
-    .track-list { display: flex; flex-direction: column; gap: 12px; }
-    .track-card { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 20px 24px; background: linear-gradient(180deg, rgba(72,208,206,0.02), rgba(4,31,42,0.2)); transition: border-color 0.3s, transform 0.2s var(--ease-out); display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
-    .track-card:hover { border-color: var(--line-3); transform: translateY(-1px); }
-    .track-icon { font-size: 28px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--paper-ghost); border: 1px solid var(--line); }
-    .track-info { min-width: 0; }
-    .track-name { font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-sub { font-family: var(--mono); font-size: 11px; color: var(--paper-mute); margin-top: 4px; }
-    .track-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-    .badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid; }
-    .badge-arm { color: #ff6b6b; border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.08); }
-    .badge-mute { color: var(--paper-mute); border-color: var(--line-2); background: var(--paper-ghost); }
-    .badge-solo { color: #ffd43b; border-color: rgba(255,212,59,0.3); background: rgba(255,212,59,0.08); }
-    .badge-teal { color: var(--teal); border-color: rgba(72,208,206,0.2); background: var(--teal-bg); }
-    .badge-flame { color: var(--flame); border-color: rgba(252,107,60,0.2); background: var(--flame-bg); }
-    .badge-paper { color: var(--paper-dim); background: var(--paper-ghost); border-color: var(--line-2); }
+.sidebar-footer{
+  padding:14px 18px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:9px;color:var(--fg-4);
+  line-height:1.6;
+}
+.sidebar-footer a{color:var(--accent);}
 
-    /* CLIP TABLE */
-    .clip-group { margin-bottom: 24px; }
-    .clip-group-title { font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--paper); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead { background: var(--ink-2); }
-    th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper-mute); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-    td { padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--paper-dim); }
-    tr:last-child td { border-bottom: none; }
-    tbody tr { transition: background 0.2s; }
-    tbody tr:hover { background: var(--paper-ghost); }
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;padding:0;position:relative;}
+.panel{display:none;padding:28px 32px 48px;animation:fadeIn 0.25s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-    /* DEVICE ACCORDION */
-    .device-group { margin-bottom: 24px; }
-    .device-group-title { font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--paper); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .device-accordion { border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 8px; }
-    .device-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: linear-gradient(180deg, rgba(72,208,206,0.02), transparent); transition: background 0.2s; }
-    .device-header:hover { background: rgba(252,241,229,0.04); }
-    .device-header-left { display: flex; align-items: center; gap: 12px; }
-    .device-type-icon { font-size: 18px; }
-    .device-name { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--paper); }
-    .device-tag { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(72,208,206,0.15); }
-    .device-param-count { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); }
-    .device-chevron { color: var(--paper-mute); transition: transform 0.2s; font-size: 12px; }
-    .device-accordion.open .device-chevron { transform: rotate(180deg); }
-    .device-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: var(--ink-2); }
-    .device-accordion.open .device-body { max-height: 4000px; }
+/* ── HEADER BAR ── */
+.header-bar{
+  padding:16px 32px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,11,16,0.8);backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:10;
+}
+.header-left{display:flex;align-items:center;gap:14px;}
+.header-title{font-weight:700;font-size:16px;color:var(--fg);}
+.header-badge{
+  font-family:var(--mono);font-size:10px;
+  padding:3px 10px;border-radius:99px;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid rgba(74,216,214,0.12);
+}
+.header-right{display:flex;align-items:center;gap:10px;}
+.btn-scroll{
+  font-size:11px;padding:5px 14px;border-radius:99px;
+  background:var(--fg-5);color:var(--fg-3);border:1px solid var(--line);
+  transition:all 0.15s;
+}
+.btn-scroll:hover{background:var(--fg-4);color:var(--fg);}
 
-    /* DEVICE SWITCHES (On/Off toggles) */
-    .device-switches { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-    .device-switch { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-sm); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; }
-    .device-switch.switch-on { background: rgba(72,208,206,0.10); color: var(--teal); }
-    .device-switch.switch-off { background: var(--paper-ghost); color: var(--paper-faint); }
-    .device-switch.switch-other { background: rgba(252,107,60,0.08); color: var(--flame); }
-    .switch-indicator { width: 6px; height: 6px; border-radius: 50%; }
-    .switch-on .switch-indicator { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
-    .switch-off .switch-indicator { background: var(--paper-faint); }
-    .switch-other .switch-indicator { background: var(--flame); }
-    .switch-name { white-space: nowrap; }
+/* ── SECTION TITLES ── */
+.section-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:20px;
+}
+.section-eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--fg-4);
+}
+.section-title{
+  font-weight:700;font-size:24px;color:var(--fg);
+  letter-spacing:-0.02em;
+}
+.section-title .a{color:var(--accent);}
 
-    /* DEVICE KNOBS (Professional audio style) */
-    .device-knobs { display: flex; flex-wrap: wrap; gap: 4px; padding: 16px; }
-    .knob-unit { width: 68px; text-align: center; padding: 8px 2px 6px; border-radius: var(--radius-sm); transition: background 0.2s; }
-    .knob-unit:hover { background: rgba(252,241,229,0.03); }
-    .knob-active { background: rgba(72,208,206,0.06); }
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:28px;}
+.stat{
+  background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 14px;
+  transition:border-color 0.2s;
+}
+.stat:hover{border-color:var(--line-2);}
+.stat-val{font-weight:800;font-size:28px;line-height:1;margin-bottom:4px;}
+.stat-val.accent{color:var(--accent);}
+.stat-val.hot{color:var(--hot);}
+.stat-val.fg{color:var(--fg);}
+.stat-val.green{color:var(--green);}
+.stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--fg-4);}
 
-    .knob-visual { position: relative; width: 36px; height: 36px; margin: 0 auto 6px; }
-    .knob-ring {
-      position: absolute; top: 3px; left: 3px; right: 3px; bottom: 3px;
-      border-radius: 50%;
-      border: 2px solid var(--line-2);
-      background: radial-gradient(circle at 40% 35%, var(--ink-4), var(--ink-2));
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(252,241,229,0.03);
-    }
-    .knob-needle {
-      position: absolute; top: 5px; left: 50%; width: 2px; height: 13px;
-      margin-left: -1px; transform-origin: bottom center;
-      background: linear-gradient(to top, var(--teal), var(--flame));
-      border-radius: 1px;
-    }
-    .knob-label { font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; color: var(--paper-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .knob-value { font-family: var(--mono); font-size: 9px; color: var(--paper-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .knob-more { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); padding: 12px; align-self: center; }
+/* ── META CHIPS ── */
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+.chip{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--fg-3);
+  padding:5px 12px;border-radius:8px;
+  background:var(--bg-2);border:1px solid var(--line);
+}
+.chip .v{color:var(--fg);font-weight:600;}
+.chip .e{font-size:14px;}
 
-    /* DEVICE CHAINS */
-    .device-chains { padding: 10px 16px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .chain-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--paper-faint); }
-    .chain-badge { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(72,208,206,0.15); }
+/* ── TRACK LIST ── */
+.track-grid{display:flex;flex-direction:column;gap:6px;}
+.track-row{
+  display:grid;grid-template-columns:40px 1fr auto auto auto;gap:10px;align-items:center;
+  padding:12px 16px;border-radius:var(--radius);
+  background:var(--bg-2);border:1px solid var(--line);
+  transition:border-color 0.15s,transform 0.1s;
+}
+.track-row:hover{border-color:var(--line-2);transform:translateX(2px);}
+.track-ico{font-size:20px;text-align:center;}
+.track-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.track-sub{font-family:var(--mono);font-size:10px;color:var(--fg-4);}
+.track-stats{display:flex;gap:8px;}
+.track-stat{font-family:var(--mono);font-size:10px;color:var(--fg-3);white-space:nowrap;}
+.track-stat .n{color:var(--fg);font-weight:500;}
+.track-badges{display:flex;gap:5px;}
+.badge{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;letter-spacing:0.04em;}
+.badge-arm{color:var(--red);background:rgba(255,92,106,0.08);border:1px solid rgba(255,92,106,0.15);}
+.badge-mute{color:var(--fg-4);background:var(--fg-5);border:1px solid var(--line);}
+.badge-solo{color:var(--yellow);background:rgba(255,208,68,0.08);border:1px solid rgba(255,208,68,0.15);}
 
-    /* SCENES */
-    .scene-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .scene-card { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 18px; background: linear-gradient(180deg, rgba(72,208,206,0.02), transparent); }
-    .scene-num { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); margin-bottom: 4px; }
-    .scene-name { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--paper); }
+/* ── CLIPS TABLE ── */
+.clip-section{margin-bottom:20px;}
+.clip-track-name{font-weight:600;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.table-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead{background:var(--bg-2);}
+th{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-4);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);}
+td{padding:8px 14px;border-bottom:1px solid var(--line);color:var(--fg-2);}
+tr:last-child td{border-bottom:none;}
+tbody tr{transition:background 0.1s;}
+tbody tr:hover{background:var(--bg-2);}
 
-    /* NOTES */
-    .notes-area { width: 100%; min-height: 140px; padding: 18px; font-family: var(--sans); font-size: 15px; color: var(--paper); background: rgba(252,241,229,0.03); border: 1px solid var(--line-2); border-radius: var(--radius-md); outline: none; resize: vertical; transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.6; }
-    .notes-area::placeholder { color: var(--paper-faint); }
-    .notes-area:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(72,208,206,0.08); }
-    .notes-hint { font-family: var(--mono); font-size: 10px; color: var(--paper-faint); margin-top: 8px; }
+/* ── DEVICE RACK ── */
+.dev-group{margin-bottom:16px;}
+.dev-group-name{font-weight:600;font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--fg-2);}
+.dev-rack{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:6px;}
+.dev-header{
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;background:var(--bg-2);transition:background 0.15s;
+}
+.dev-header:hover{background:var(--bg-3);}
+.dev-h-left{display:flex;align-items:center;gap:10px;}
+.dev-emoji{font-size:16px;}
+.dev-name{font-weight:600;font-size:13px;}
+.dev-type{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(74,216,214,0.1);}
+.dev-count{font-family:var(--mono);font-size:9px;color:var(--fg-4);}
+.dev-chevron{color:var(--fg-4);transition:transform 0.2s;font-size:11px;}
+.dev-rack.open .dev-chevron{transform:rotate(180deg);}
+.dev-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;background:var(--bg-1);}
+.dev-rack.open .dev-body{max-height:5000px;}
 
-    /* SUGGESTIONS */
-    .suggestion-list { display: flex; flex-direction: column; gap: 12px; }
-    .suggestion-card { padding: 16px 20px; border-radius: var(--radius-md); border-left: 3px solid; display: flex; gap: 12px; align-items: flex-start; }
-    .suggestion-card.s-tip { background: rgba(72,208,206,0.06); border-color: var(--teal); }
-    .suggestion-card.s-warning { background: rgba(252,107,60,0.06); border-color: var(--flame); }
-    .suggestion-card.s-info { background: rgba(252,241,229,0.04); border-color: var(--paper-mute); }
-    .suggestion-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
-    .suggestion-text { font-size: 14px; color: var(--paper-dim); line-height: 1.5; }
+/* Switches row */
+.dev-switches{display:flex;flex-wrap:wrap;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);}
+.sw{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:4px;}
+.sw-on{background:rgba(61,214,140,0.08);color:var(--green);}
+.sw-off{background:var(--fg-5);color:var(--fg-4);}
+.sw-other{background:var(--hot-bg);color:var(--hot);}
+.sw-dot{width:5px;height:5px;border-radius:50%;}
+.sw-on .sw-dot{background:var(--green);box-shadow:0 0 4px var(--green);}
+.sw-off .sw-dot{background:var(--fg-4);}
+.sw-other .sw-dot{background:var(--hot);}
 
-    /* FOOTER */
-    .footer { padding: 48px 0; border-top: 1px solid var(--line); color: var(--paper-mute); font-size: 13px; text-align: center; }
-    .footer a { color: var(--teal); transition: color 0.2s; }
-    .footer a:hover { color: var(--paper); }
-    .footer .brand { font-family: var(--display); font-weight: 700; font-size: 16px; color: var(--paper); margin-bottom: 8px; }
-    .footer .sub { font-family: var(--mono); font-size: 11px; color: var(--paper-faint); margin-top: 12px; }
+/* Knob grid */
+.dev-knobs{display:flex;flex-wrap:wrap;gap:2px;padding:12px 10px;}
+.knob{
+  width:64px;text-align:center;padding:6px 2px 4px;border-radius:6px;
+  transition:background 0.15s;
+}
+.knob:hover{background:rgba(232,224,212,0.03);}
+.knob-ring-wrap{position:relative;width:32px;height:32px;margin:0 auto 4px;}
+.knob-ring{
+  position:absolute;top:2px;left:2px;right:2px;bottom:2px;
+  border-radius:50%;border:1.5px solid var(--line-2);
+  background:radial-gradient(circle at 40% 35%,var(--bg-4),var(--bg-2));
+  box-shadow:inset 0 1px 4px rgba(0,0,0,0.5);
+}
+.knob-needle{
+  position:absolute;top:4px;left:50%;width:1.5px;height:11px;
+  margin-left:-0.75px;transform-origin:bottom center;
+  background:linear-gradient(to top,var(--accent),var(--hot));
+  border-radius:1px;
+}
+.knob-lbl{font-family:var(--mono);font-size:7px;color:var(--fg-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.knob-val{font-family:var(--mono);font-size:8px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-    /* FLOATING BUTTONS */
-    .floating-buttons { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 90; }
-    .fab { width: 44px; height: 44px; border-radius: 50%; background: var(--ink-3); border: 1px solid var(--line-2); color: var(--paper-dim); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, background 0.2s, border-color 0.2s; }
-    .fab:hover { transform: translateY(-2px); background: var(--ink-4); border-color: var(--line-3); color: var(--paper); }
-    .fab-share { background: var(--teal-bg); border-color: rgba(72,208,206,0.2); }
-    .fab-share:hover { background: rgba(72,208,206,0.15); border-color: rgba(72,208,206,0.4); }
+/* Chains */
+.dev-chains{padding:8px 14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.chain-lbl{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--fg-4);}
+.chain-badge{font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(74,216,214,0.1);}
 
-    /* ANIMATIONS */
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(72,208,206,0.6); } 70% { box-shadow: 0 0 0 10px rgba(72,208,206,0); } 100% { box-shadow: 0 0 0 0 rgba(72,208,206,0); } }
-    @keyframes glow-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
-    @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-up { animation: fade-up 0.6s var(--ease-out) both; }
+/* ── SCENES ── */
+.scene-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}
+.scene-card{
+  padding:12px 14px;border-radius:var(--radius);
+  background:var(--bg-2);border:1px solid var(--line);
+  transition:border-color 0.15s;
+}
+.scene-card:hover{border-color:var(--line-2);}
+.scene-num{font-family:var(--mono);font-size:9px;color:var(--fg-4);margin-bottom:2px;}
+.scene-name{font-weight:600;font-size:13px;}
 
-    /* DIVIDER */
-    .divider-glow { border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--teal), transparent); margin: 48px 0; opacity: 0.4; }
+/* ── NOTES ── */
+.notes-box{
+  width:100%;min-height:180px;padding:16px;
+  font-family:var(--sans);font-size:14px;color:var(--fg);
+  background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--radius);outline:none;resize:vertical;
+  line-height:1.7;transition:border-color 0.2s,box-shadow 0.2s;
+}
+.notes-box::placeholder{color:var(--fg-4);}
+.notes-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.notes-hint{font-family:var(--mono);font-size:9px;color:var(--fg-4);margin-top:6px;}
 
-    @media (max-width: 768px) {
-      .wrap { padding: 0 20px; }
-      .section { padding: 48px 0; }
-      .track-card { grid-template-columns: auto 1fr; }
-      .track-badges { grid-column: 1 / -1; }
-      .param-row { grid-template-columns: 100px 1fr 50px; }
-      .nav-links { display: none; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+/* ── INSIGHTS ── */
+.insight-list{display:flex;flex-direction:column;gap:8px;}
+.insight{
+  padding:12px 16px;border-radius:var(--radius);
+  border-left:3px solid;display:flex;gap:10px;align-items:flex-start;
+}
+.insight.tip{background:var(--accent-bg);border-color:var(--accent);}
+.insight.warn{background:var(--hot-bg);border-color:var(--hot);}
+.insight.info{background:rgba(232,224,212,0.03);border-color:var(--fg-3);}
+.insight-icon{font-size:18px;flex-shrink:0;}
+.insight-text{font-size:13px;color:var(--fg-2);line-height:1.5;}
+
+/* ── FOOTER ── */
+.report-footer{
+  text-align:center;padding:32px 0 16px;
+  border-top:1px solid var(--line);margin-top:32px;
+  font-family:var(--mono);font-size:10px;color:var(--fg-4);
+}
+.report-footer a{color:var(--accent);transition:color 0.15s;}
+.report-footer a:hover{color:var(--fg);}
+.report-footer .name{font-family:var(--sans);font-weight:600;font-size:12px;color:var(--fg-2);margin-bottom:4px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .panel{padding:20px 16px 40px;}
+  .track-row{grid-template-columns:30px 1fr auto;}
+  .track-stats,.track-badges{display:none;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+}
 `;
 
 // ══════════════════════════════════════
@@ -288,325 +346,231 @@ const CSS = `
 // ══════════════════════════════════════
 
 const JS = `
-  // Accordion toggle
-  document.querySelectorAll('.device-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const accordion = header.parentElement;
-      accordion.classList.toggle('open');
+  // Navigation
+  const navItems = document.querySelectorAll('.nav-item');
+  const panels = document.querySelectorAll('.panel');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const target = item.dataset.panel;
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      panels.forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + target).classList.add('active');
     });
+  });
+
+  // Device accordion
+  document.querySelectorAll('.dev-header').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
   });
 
   // Notes localStorage
-  const notesArea = document.getElementById('project-notes');
-  if (notesArea) {
-    const saved = localStorage.getItem('project-snapshot-notes');
-    if (saved) notesArea.value = saved;
-    notesArea.addEventListener('input', () => {
-      localStorage.setItem('project-snapshot-notes', notesArea.value);
-    });
+  const notes = document.getElementById('project-notes');
+  if(notes){
+    const s = localStorage.getItem('ps-notes');
+    if(s) notes.value = s;
+    notes.addEventListener('input', () => localStorage.setItem('ps-notes', notes.value));
   }
-
-  // Share report (copy file path hint)
-  function shareReport() {
-    const text = 'Project Snapshot — Generated with Project Snapshot for Ableton Live by Douglas Fugazi';
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard!');
-      });
-    }
-  }
-
-  // Smooth reveal on scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.section').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
-  });
 `;
 
 // ══════════════════════════════════════
 // RENDER SECTIONS
 // ══════════════════════════════════════
 
-function renderNav(data: ProjectSnapshot): string {
-  return `  <nav class="nav">
-    <div class="nav-inner">
-      <div class="nav-brand">
-        <span class="nav-brand-dot"></span>
-        📸 Project Snapshot
+function renderSidebar(data: ProjectSnapshot): string {
+  const o = data.overview;
+  return `<aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand-icon">📸</span>
+      <div>
+        <div class="sidebar-brand-text">Snapshot</div>
+        <div class="sidebar-brand-ver">${o.tempo} BPM · ${o.trackCount} tracks</div>
       </div>
-      <ul class="nav-links">
-        <li><a href="#overview">Overview</a></li>
-        <li><a href="#tracks">Tracks</a></li>
-        <li><a href="#clips">Clips</a></li>
-        <li><a href="#devices">Devices</a></li>
-        <li><a href="#scenes">Scenes</a></li>
-        <li><a href="#notes">Notes</a></li>
-        <li><a href="#suggestions">Next Steps</a></li>
-      </ul>
     </div>
-  </nav>`;
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-panel="overview"><span class="nav-icon">🎯</span> Overview</div>
+      <div class="nav-item" data-panel="tracks"><span class="nav-icon">🎵</span> Tracks <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--fg-4)">${o.trackCount}</span></div>
+      <div class="nav-item" data-panel="clips"><span class="nav-icon">🎹</span> Clips <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--fg-4)">${o.totalClipCount}</span></div>
+      <div class="nav-item" data-panel="devices"><span class="nav-icon">🔌</span> Devices <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--fg-4)">${o.totalDeviceCount}</span></div>
+      <div class="nav-item" data-panel="scenes"><span class="nav-icon">🎬</span> Scenes <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--fg-4)">${o.sceneCount}</span></div>
+      <div class="nav-item" data-panel="notes"><span class="nav-icon">📝</span> Notes</div>
+      <div class="nav-item" data-panel="insights"><span class="nav-icon">💡</span> Insights <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--fg-4)">${data.suggestions.length}</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="color:var(--fg-3);margin-bottom:4px;">Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a></div>
+      ${data.generatedDate}
+    </div>
+  </aside>`;
 }
 
-function renderHero(data: ProjectSnapshot): string {
+function renderHeader(data: ProjectSnapshot): string {
+  const o = data.overview;
+  return `<div class="header-bar">
+    <div class="header-left">
+      <span class="header-title">📸 Project Snapshot</span>
+      <span class="header-badge">${o.tempo} BPM</span>
+      <span class="header-badge">${o.signatureNumerator}/${o.signatureDenominator}</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-scroll" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>`;
+}
+
+function renderOverview(data: ProjectSnapshot): string {
   const o = data.overview;
   const scaleDisplay = o.scaleName && o.scaleName !== "None"
-    ? `${NOTE_NAMES[o.rootNote]} ${o.scaleName}`
-    : "No scale set";
+    ? `${NOTE_NAMES[o.rootNote]} ${o.scaleName}` : "No scale set";
 
-  return `  <header id="overview" class="hero section no-border">
-    <div class="wrap">
-      <div class="hero-content">
-        <div class="glow-teal"></div>
-        <div class="glow-flame"></div>
-        <p class="eyebrow eyebrow-dot animate-fade-up">📸 Project Snapshot</p>
-        <h1 style="margin-top:24px;">
-          Your <span class="teal">Live</span><br>Project at a Glance
-        </h1>
-        <div class="hero-meta animate-fade-up" style="animation-delay:0.2s;">
-          <div class="hero-meta-item">
-            <span class="emoji">⏱️</span>
-            <span class="value">${o.tempo}</span> BPM
-          </div>
-          <div class="hero-meta-item">
-            <span class="emoji">🎵</span>
-            <span class="value">${o.signatureNumerator}/${o.signatureDenominator}</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="emoji">🎹</span>
-            <span class="value">${scaleDisplay}</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="emoji">📊</span>
-            <span class="value">${o.trackCount}</span> tracks
-          </div>
-          <div class="hero-meta-item">
-            <span class="emoji">🎞️</span>
-            <span class="value">${o.totalClipCount}</span> clips
-          </div>
-          <div class="hero-meta-item">
-            <span class="emoji">🔌</span>
-            <span class="value">${o.totalDeviceCount}</span> devices
-          </div>
-        </div>
-        <p style="margin-top:20px; font-family:var(--mono); font-size:12px; color:var(--paper-faint);">
-          Generated on ${data.generatedDate}
-        </p>
-      </div>
-    </div>
-  </header>`;
+  return `<div class="section-head">
+    <span class="section-eyebrow">PROJECT OVERVIEW</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val hot">${o.tempo}</div><div class="stat-lbl">BPM</div></div>
+    <div class="stat"><div class="stat-val accent">${o.audioTrackCount}</div><div class="stat-lbl">Audio Tracks</div></div>
+    <div class="stat"><div class="stat-val accent">${o.midiTrackCount}</div><div class="stat-lbl">MIDI Tracks</div></div>
+    <div class="stat"><div class="stat-val fg">${o.totalClipCount}</div><div class="stat-lbl">Total Clips</div></div>
+    <div class="stat"><div class="stat-val hot">${o.totalDeviceCount}</div><div class="stat-lbl">Devices</div></div>
+    <div class="stat"><div class="stat-val accent">${o.sceneCount}</div><div class="stat-lbl">Scenes</div></div>
+    <div class="stat"><div class="stat-val fg">${o.cuePointCount}</div><div class="stat-lbl">Cue Points</div></div>
+    <div class="stat"><div class="stat-val green">${o.signatureNumerator}/${o.signatureDenominator}</div><div class="stat-lbl">Time Sig</div></div>
+  </div>
+
+  <div class="meta-row">
+    <div class="chip"><span class="e">🎵</span> <span class="v">${scaleDisplay}</span></div>
+    <div class="chip"><span class="e">⏱️</span> ${o.tempo} BPM</div>
+    <div class="chip"><span class="e">🎹</span> <span class="v">${o.midiTrackCount}</span> MIDI</div>
+    <div class="chip"><span class="e">🎙️</span> <span class="v">${o.audioTrackCount}</span> Audio</div>
+    <div class="chip"><span class="e">🎬</span> <span class="v">${o.sceneCount}</span> scenes</div>
+  </div>
+
+  <p style="font-size:13px;color:var(--fg-3);max-width:600px;margin-top:16px;">
+    This snapshot was generated on <strong style="color:var(--fg)">${data.generatedDate}</strong>.
+    Navigate using the sidebar to explore tracks, clips, devices, scenes, and personalized insights for your project.
+  </p>`;
 }
 
-const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-
-function renderStats(data: ProjectSnapshot): string {
-  const o = data.overview;
-  const stats = [
-    { num: o.tempo, label: "Tempo (BPM)", color: "var(--flame)" },
-    { num: o.audioTrackCount, label: "Audio Tracks", color: "var(--teal)" },
-    { num: o.midiTrackCount, label: "MIDI Tracks", color: "var(--teal)" },
-    { num: o.totalClipCount, label: "Total Clips", color: "var(--paper)" },
-    { num: o.totalDeviceCount, label: "Devices", color: "var(--flame-2)" },
-    { num: o.sceneCount, label: "Scenes", color: "var(--teal-dim)" },
-    { num: o.cuePointCount, label: "Cue Points", color: "var(--paper-dim)" },
-    { num: `${o.signatureNumerator}/${o.signatureDenominator}`, label: "Time Sig", color: "var(--flame)" },
-  ];
-
-  return `  <section class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:32px;">📊 Quick Stats</p>
-      <div class="stats-grid">
-        ${stats.map(s => `
-        <div class="stat-card">
-          <div class="stat-num" style="color:${s.color};">${s.num}</div>
-          <div class="stat-label">${s.label}</div>
-        </div>`).join("")}
-      </div>
-    </div>
-  </section>`;
+function renderTracksPanel(data: ProjectSnapshot): string {
+  return `<div class="section-head">
+    <span class="section-eyebrow">TRACKS</span>
+    <span class="section-title">Your <span class="a">Tracks</span></span>
+  </div>
+  <div class="track-grid">
+    ${data.tracks.map(t => renderTrackRow(t)).join("")}
+  </div>`;
 }
 
-function renderTracks(data: ProjectSnapshot): string {
-  if (data.tracks.length === 0) return "";
-  return `  <section id="tracks" class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">🎵 Tracks</p>
-      <h2>Your <span class="teal">Tracks</span></h2>
-      <div class="track-list">
-        ${data.tracks.map(t => renderTrackCard(t)).join("")}
-      </div>
-    </div>
-  </section>`;
-}
-
-function renderTrackCard(track: SnapshotTrack): string {
-  const emoji = getTrackTypeEmoji(track.type);
-  const typeName = getTrackTypeName(track.type);
+function renderTrackRow(t: SnapshotTrack): string {
+  const emoji = getTrackTypeEmoji(t.type);
+  const typeName = getTrackTypeName(t.type);
   const badges: string[] = [];
-  if (track.arm) badges.push(`<span class="badge badge-arm">🔴 ARM</span>`);
-  if (track.mute) badges.push(`<span class="badge badge-mute">🔇 MUTE</span>`);
-  if (track.solo) badges.push(`<span class="badge badge-solo">🎧 SOLO</span>`);
-  badges.push(`<span class="badge badge-teal">${track.clipCount} clip${track.clipCount !== 1 ? "s" : ""}</span>`);
-  badges.push(`<span class="badge badge-paper">${track.deviceCount} device${track.deviceCount !== 1 ? "s" : ""}</span>`);
-  if (track.hasGroupTrack && track.groupTrackName) {
-    badges.push(`<span class="badge badge-flame">📁 ${track.groupTrackName}</span>`);
-  }
+  if (t.arm) badges.push(`<span class="badge badge-arm">🔴 ARM</span>`);
+  if (t.mute) badges.push(`<span class="badge badge-mute">🔇 MUTE</span>`);
+  if (t.solo) badges.push(`<span class="badge badge-solo">🎧 SOLO</span>`);
 
-  return `        <div class="track-card">
-          <div class="track-icon">${emoji}</div>
-          <div class="track-info">
-            <div class="track-name">${esc(track.name)}</div>
-            <div class="track-sub">${typeName}</div>
-          </div>
-          <div class="track-badges">${badges.join("")}</div>
-        </div>`;
+  return `<div class="track-row">
+    <div class="track-ico">${emoji}</div>
+    <div>
+      <div class="track-name">${esc(t.name)}</div>
+      <div class="track-sub">${typeName}</div>
+    </div>
+    <div class="track-stats">
+      <span class="track-stat">🎹 <span class="n">${t.clipCount}</span></span>
+      <span class="track-stat">🔌 <span class="n">${t.deviceCount}</span></span>
+    </div>
+    <div class="track-badges">${badges.join("")}</div>
+  </div>`;
 }
 
-function renderClips(data: ProjectSnapshot): string {
+function renderClipsPanel(data: ProjectSnapshot): string {
   const tracksWithClips = data.tracks.filter(t => t.clips.length > 0);
-  if (tracksWithClips.length === 0) return "";
-
-  return `  <section id="clips" class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">🎹 Clips</p>
-      <h2>Clip <span class="teal">Details</span></h2>
-      ${tracksWithClips.map(t => renderClipGroup(t)).join("")}
-    </div>
-  </section>`;
+  return `<div class="section-head">
+    <span class="section-eyebrow">CLIPS</span>
+    <span class="section-title">Clip <span class="a">Details</span></span>
+  </div>
+  ${tracksWithClips.map(t => renderClipSection(t)).join("")}`;
 }
 
-function renderClipGroup(track: SnapshotTrack): string {
-  return `      <div class="clip-group">
-        <div class="clip-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Warp Mode</th>
-                <th>Loop</th>
-                <th>Range</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${track.clips.map(c => renderClipRow(c)).join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>`;
+function renderClipSection(track: SnapshotTrack): string {
+  return `<div class="clip-section">
+    <div class="clip-track-name">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Type</th><th>Warp</th><th>Loop</th><th>MIDI</th></tr></thead>
+      <tbody>${track.clips.map(c => renderClipRow(c)).join("")}</tbody>
+    </table></div>
+  </div>`;
 }
 
-function renderClipRow(clip: SnapshotClip): string {
-  const typeEmoji = clip.type === "audio" ? "🎙️" : "🎹";
-  const loopText = clip.isLooping !== null ? (clip.isLooping ? "🔁 On" : "➡️ Off") : "—";
-  const rangeText = clip.startMarker !== null && clip.endMarker !== null
-    ? `${clip.startMarker} → ${clip.endMarker}`
+function renderClipRow(c: SnapshotClip): string {
+  const typeE = c.type === "audio" ? "🎙️" : "🎹";
+  const loop = c.isLooping !== null ? (c.isLooping ? "🔁" : "➡️") : "—";
+  const warp = c.warpMode ?? (c.type === "midi" ? "—" : "—");
+  const midi = c.midiInfo && c.midiInfo.noteCount > 0
+    ? `${c.midiInfo.noteCount} notes (${midiNoteToName(c.midiInfo.lowestNote)}–${midiNoteToName(c.midiInfo.highestNote)})`
     : "—";
-  const warpText = clip.warpMode ?? (clip.type === "midi" ? "N/A" : "—");
-  const midiExtra = clip.midiInfo && clip.midiInfo.noteCount > 0
-    ? ` | 🎵 ${clip.midiInfo.noteCount} notes (${midiNoteToName(clip.midiInfo.lowestNote)}–${midiNoteToName(clip.midiInfo.highestNote)})`
-    : "";
-
-  return `              <tr>
-                <td style="color:var(--paper);">${esc(clip.name)}</td>
-                <td>${typeEmoji} ${clip.type.toUpperCase()}</td>
-                <td>${warpText}</td>
-                <td>${loopText}</td>
-                <td>${rangeText}${midiExtra}</td>
-              </tr>`;
+  return `<tr>
+    <td style="color:var(--fg)">${esc(c.name)}</td>
+    <td>${typeE} ${c.type.toUpperCase()}</td>
+    <td>${warp}</td><td>${loop}</td><td>${midi}</td>
+  </tr>`;
 }
 
-function renderDevices(data: ProjectSnapshot): string {
+function renderDevicesPanel(data: ProjectSnapshot): string {
   const tracksWithDevices = data.tracks.filter(t => t.devices.length > 0);
-  if (tracksWithDevices.length === 0) return "";
-
-  return `  <section id="devices" class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">🔌 Devices</p>
-      <h2>Devices & <span class="teal">Parameters</span></h2>
-      ${tracksWithDevices.map(t => renderDeviceGroup(t)).join("")}
-    </div>
-  </section>`;
+  return `<div class="section-head">
+    <span class="section-eyebrow">DEVICES</span>
+    <span class="section-title">Devices & <span class="a">Parameters</span></span>
+  </div>
+  ${tracksWithDevices.map(t => renderDevGroup(t)).join("")}`;
 }
 
-function renderDeviceGroup(track: SnapshotTrack): string {
-  return `      <div class="device-group">
-        <div class="device-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
-        ${track.devices.map(d => renderDeviceAccordion(d)).join("")}
-      </div>`;
+function renderDevGroup(track: SnapshotTrack): string {
+  return `<div class="dev-group">
+    <div class="dev-group-name">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
+    ${track.devices.map(d => renderDevRack(d)).join("")}
+  </div>`;
 }
 
-function renderDeviceAccordion(device: SnapshotDevice): string {
-  const typeEmoji: Record<string, string> = {
-    device: "🔌", rack: "🎛️", simpler: "🎵", drumRack: "🥁",
-  };
-  const emoji = typeEmoji[device.type] ?? "🔌";
-  const tagEmoji: Record<string, string> = {
-    device: "Device", rack: "Rack", simpler: "Simpler", drumRack: "Drum Rack",
-  };
-  const tag = tagEmoji[device.type] ?? device.className;
+function renderDevRack(device: SnapshotDevice): string {
+  const emojiMap: Record<string,string> = {device:"🔌",rack:"🎛️",simpler:"🎵",drumRack:"🥁"};
+  const tagMap: Record<string,string> = {device:"Device",rack:"Rack",simpler:"Simpler",drumRack:"Drum Rack"};
+  const emoji = emojiMap[device.type] ?? "🔌";
+  const tag = tagMap[device.type] ?? device.className;
 
-  const chainInfo = device.chains.length > 0
-    ? `<div class="device-chains">
-        <span class="chain-label">CHAINS</span>
-        ${device.chains.map(c => `<span class="chain-badge">${esc(c.name)}</span>`).join("")}
-      </div>`
-    : "";
-
-  // Separate params into knobs (continuous) and switches (quantized/toggle)
   const knobs: SnapshotParameter[] = [];
   const switches: SnapshotParameter[] = [];
   for (const p of device.parameters) {
-    if (p.isQuantized && p.valueItems.length <= 2) {
-      switches.push(p);
-    } else if (p.isQuantized && p.valueItems.length > 0) {
-      // Selector params — treat as knobs but with labels
-      knobs.push(p);
-    } else {
-      knobs.push(p);
-    }
+    if (p.isQuantized && p.valueItems.length <= 2) switches.push(p);
+    else knobs.push(p);
   }
 
-  const maxKnobs = 40;
-  const visibleKnobs = knobs.slice(0, maxKnobs);
-  const hasMore = knobs.length > maxKnobs;
+  const chainsHtml = device.chains.length > 0
+    ? `<div class="dev-chains"><span class="chain-lbl">CHAINS</span>${device.chains.map(c => `<span class="chain-badge">${esc(c.name)}</span>`).join("")}</div>`
+    : "";
 
-  return `        <div class="device-accordion">
-          <div class="device-header">
-            <div class="device-header-left">
-              <span class="device-type-icon">${emoji}</span>
-              <span class="device-name">${esc(device.name)}</span>
-              <span class="device-tag">${tag}</span>
-              <span class="device-param-count">${device.parameters.length} params</span>
-            </div>
-            <span class="device-chevron">▼</span>
-          </div>
-          <div class="device-body">
-            ${switches.length > 0 ? `
-            <div class="device-switches">
-              ${switches.map(p => renderSwitch(p)).join("")}
-            </div>` : ""}
-            <div class="device-knobs">
-              ${visibleKnobs.map(p => renderKnob(p)).join("")}
-              ${hasMore ? `<div class="knob-more">+${knobs.length - maxKnobs} more</div>` : ""}
-            </div>
-            ${chainInfo}
-          </div>
-        </div>`;
+  return `<div class="dev-rack">
+    <div class="dev-header">
+      <div class="dev-h-left">
+        <span class="dev-emoji">${emoji}</span>
+        <span class="dev-name">${esc(device.name)}</span>
+        <span class="dev-type">${tag}</span>
+        <span class="dev-count">${device.parameters.length} params</span>
+      </div>
+      <span class="dev-chevron">▼</span>
+    </div>
+    <div class="dev-body">
+      ${switches.length > 0 ? `<div class="dev-switches">${switches.map(p => renderSwitch(p)).join("")}</div>` : ""}
+      <div class="dev-knobs">
+        ${knobs.slice(0, 40).map(p => renderKnob(p)).join("")}
+        ${knobs.length > 40 ? `<div style="font-family:var(--mono);font-size:9px;color:var(--fg-4);padding:8px;">+${knobs.length - 40} more</div>` : ""}
+      </div>
+      ${chainsHtml}
+    </div>
+  </div>`;
 }
 
-function getParamDisplay(param: SnapshotParameter): { display: string; pct: number } {
+function getParamInfo(param: SnapshotParameter): { display: string; pct: number } {
   const numValue = typeof param.value === "number" ? param.value : 0;
   const numMin = typeof param.minValue === "number" ? param.minValue : 0;
   const numMax = typeof param.maxValue === "number" ? param.maxValue : 1;
@@ -617,11 +581,8 @@ function getParamDisplay(param: SnapshotParameter): { display: string; pct: numb
   if (param.isQuantized && param.valueItems.length > 0) {
     const idx = Math.max(0, Math.min(param.valueItems.length - 1, Math.round(numValue)));
     const item = param.valueItems[idx];
-    if (item && item !== "" && item !== "undefined") {
-      display = item;
-    } else {
-      display = numValue % 1 === 0 ? String(numValue) : numValue.toFixed(2);
-    }
+    display = (item && item !== "" && item !== "undefined") ? item
+      : (numValue % 1 === 0 ? String(numValue) : numValue.toFixed(2));
   } else if (typeof param.value === "number") {
     display = param.value % 1 === 0 ? String(param.value) : param.value.toFixed(2);
   } else if (typeof param.value === "object" && param.value !== null) {
@@ -630,121 +591,99 @@ function getParamDisplay(param: SnapshotParameter): { display: string; pct: numb
   } else {
     display = String(param.value ?? "—");
   }
-
   return { display, pct };
 }
 
 function renderKnob(param: SnapshotParameter): string {
-  const { display, pct } = getParamDisplay(param);
-  const angle = -135 + (pct / 100) * 270; // -135° to +135° arc
-  const isOn = param.name === "Device On" || param.name === "On";
-  const highlightClass = isOn ? "knob-unit knob-active" : "knob-unit";
-
-  return `              <div class="${highlightClass}">
-                <div class="knob-visual">
-                  <div class="knob-ring"></div>
-                  <div class="knob-needle" style="transform:rotate(${angle}deg)"></div>
-                </div>
-                <div class="knob-label">${esc(param.name)}</div>
-                <div class="knob-value">${esc(String(display))}</div>
-              </div>`;
+  const { display, pct } = getParamInfo(param);
+  const angle = -135 + (pct / 100) * 270;
+  return `<div class="knob">
+    <div class="knob-ring-wrap">
+      <div class="knob-ring"></div>
+      <div class="knob-needle" style="transform:rotate(${angle}deg)"></div>
+    </div>
+    <div class="knob-lbl">${esc(param.name)}</div>
+    <div class="knob-val">${esc(String(display))}</div>
+  </div>`;
 }
 
 function renderSwitch(param: SnapshotParameter): string {
-  const { display } = getParamDisplay(param);
-  const isOn = display === "On" || display === "True" || display === "Yes" || display === "1" || display === "Active";
-  const isOff = display === "Off" || display === "False" || display === "No" || display === "0" || display === "Inactive";
-  const stateClass = isOn ? "switch-on" : isOff ? "switch-off" : "switch-other";
-
-  return `              <div class="device-switch ${stateClass}">
-                <div class="switch-indicator"></div>
-                <span class="switch-name">${esc(param.name)}</span>
-              </div>`;
+  const { display } = getParamInfo(param);
+  const isOn = ["on","true","yes","1","active"].includes(String(display).toLowerCase());
+  const isOff = ["off","false","no","0","inactive"].includes(String(display).toLowerCase());
+  const cls = isOn ? "sw-on" : isOff ? "sw-off" : "sw-other";
+  return `<div class="sw ${cls}"><div class="sw-dot"></div>${esc(param.name)}</div>`;
 }
 
-function renderScenes(data: ProjectSnapshot): string {
-  if (data.scenes.length === 0 && data.cuePoints.length === 0) return "";
+function renderScenesPanel(data: ProjectSnapshot): string {
+  let html = `<div class="section-head">
+    <span class="section-eyebrow">SCENES & MARKERS</span>
+    <span class="section-title">Scenes & <span class="a">Cue Points</span></span>
+  </div>`;
 
-  return `  <section id="scenes" class="section">
-    <div class="wrap">
-      ${data.scenes.length > 0 ? `
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">🎬 Scenes & Cue Points</p>
-      <h2>Scenes & <span class="teal">Markers</span></h2>
-      <div class="scene-list">
-        ${data.scenes.map((s, i) => `
-        <div class="scene-card">
-          <div class="scene-num">SCENE ${i + 1}</div>
-          <div class="scene-name">${esc(s.name)}</div>
-        </div>`).join("")}
-      </div>
-      ` : ""}
-      ${data.cuePoints.length > 0 ? `
-      <div style="margin-top:32px;">
-        <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">📍 Cue Points</p>
-        <div class="scene-list">
-          ${data.cuePoints.map((cp, i) => `
-          <div class="scene-card">
-            <div class="scene-num">CUE ${i + 1}</div>
-            <div class="scene-name">📍 ${esc(cp.name)}</div>
-          </div>`).join("")}
-        </div>
-      </div>
-      ` : ""}
-    </div>
-  </section>`;
+  if (data.scenes.length > 0) {
+    html += `<div class="scene-grid">
+      ${data.scenes.map((s, i) => `<div class="scene-card">
+        <div class="scene-num">SCENE ${i + 1}</div>
+        <div class="scene-name">${esc(s.name)}</div>
+      </div>`).join("")}
+    </div>`;
+  }
+
+  if (data.cuePoints.length > 0) {
+    html += `<div style="margin-top:20px;"><div class="section-eyebrow" style="margin-bottom:10px;">📍 CUE POINTS</div>
+    <div class="scene-grid">
+      ${data.cuePoints.map((cp, i) => `<div class="scene-card">
+        <div class="scene-num">CUE ${i + 1}</div>
+        <div class="scene-name">📍 ${esc(cp.name)}</div>
+      </div>`).join("")}
+    </div></div>`;
+  }
+
+  if (data.scenes.length === 0 && data.cuePoints.length === 0) {
+    html += `<p style="color:var(--fg-3);font-size:13px;">No scenes or cue points found in this project.</p>`;
+  }
+
+  return html;
 }
 
-function renderNotes(): string {
-  return `  <section id="notes" class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">📝 Notes</p>
-      <h2>Your <span class="teal">Notes</span></h2>
-      <p style="color:var(--paper-dim); font-size:14px; margin-bottom:16px;">
-        Write down where you left off, what's working, what needs work, or any ideas for next session.
-      </p>
-      <textarea id="project-notes" class="notes-area" placeholder="e.g. 'The bass line in Track 3 needs variation. Try adding a filter sweep on the drop. The pad sounds great — keep that. Need to finish the arrangement...'"></textarea>
-      <div class="notes-hint">💾 Notes are saved locally in your browser and will persist between sessions.</div>
-    </div>
-  </section>`;
+function renderNotesPanel(): string {
+  return `<div class="section-head">
+    <span class="section-eyebrow">NOTES</span>
+    <span class="section-title">Your <span class="a">Notes</span></span>
+  </div>
+  <p style="color:var(--fg-3);font-size:13px;margin-bottom:14px;">
+    Write down where you left off, what's working, what needs work, or any ideas for your next session.
+  </p>
+  <textarea id="project-notes" class="notes-box" placeholder="e.g. 'The bass line in Track 3 needs variation. Try adding a filter sweep on the drop. The pad sounds great — keep that. Need to finish the arrangement...'"></textarea>
+  <div class="notes-hint">💾 Notes are saved in your browser and persist between sessions.</div>`;
 }
 
-function renderSuggestions(data: ProjectSnapshot): string {
-  if (data.suggestions.length === 0) return "";
-  return `  <section id="suggestions" class="section">
-    <div class="wrap">
-      <p class="eyebrow eyebrow-dot" style="margin-bottom:16px;">💡 Next Steps</p>
-      <h2>Suggested <span class="teal">Next Steps</span></h2>
-      <div class="suggestion-list">
-        ${data.suggestions.map(s => `
-        <div class="suggestion-card s-${s.type}">
-          <div class="suggestion-icon">${s.icon}</div>
-          <div class="suggestion-text">${esc(s.text)}</div>
-        </div>`).join("")}
-      </div>
-    </div>
-  </section>`;
+function renderInsightsPanel(data: ProjectSnapshot): string {
+  return `<div class="section-head">
+    <span class="section-eyebrow">INSIGHTS</span>
+    <span class="section-title">Suggested <span class="a">Next Steps</span></span>
+  </div>
+  <div class="insight-list">
+    ${data.suggestions.map(s => `<div class="insight ${s.type === "tip" ? "tip" : s.type === "warning" ? "warn" : "info"}">
+      <div class="insight-icon">${s.icon}</div>
+      <div class="insight-text">${esc(s.text)}</div>
+    </div>`).join("")}
+  </div>
+
+  <div class="report-footer">
+    <div class="name">📸 Project Snapshot</div>
+    <div>Created by <a href="https://www.douglasfugazi.co" target="_blank">Douglas Fugazi</a></div>
+    <div style="margin-top:4px;">Generated on ${data.generatedDate}</div>
+  </div>`;
 }
 
-function renderFooter(data: ProjectSnapshot): string {
-  return `  <footer class="footer">
-    <div class="wrap">
-      <hr class="divider-glow">
-      <div class="brand">📸 Project Snapshot</div>
-      <div>Created by <a href="https://www.douglasfugazi.co" target="_blank" rel="noopener">Douglas Fugazi</a></div>
-      <div class="sub">
-        An Ableton Live Extension · Generated on ${data.generatedDate}
-      </div>
-    </div>
-  </footer>`;
-}
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
 
-// ── Helper ──
+const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
 function esc(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
