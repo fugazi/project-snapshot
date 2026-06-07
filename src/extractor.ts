@@ -348,23 +348,57 @@ function extractParameters(device: any): SnapshotParameter[] {
 
   for (const param of device.parameters) {
     try {
+      // Safely extract primitive values
+      const rawValue = param.value;
+      let value: number = 0;
+      if (typeof rawValue === "number") {
+        value = rawValue;
+      } else if (typeof rawValue === "object" && rawValue !== null) {
+        // Object value — try to extract a number from it
+        value = rawValue.value ?? rawValue.raw ?? rawValue.display ?? 0;
+        if (typeof value !== "number") value = 0;
+      }
+
+      let minValue = 0;
+      try { minValue = typeof param.min === "number" ? param.min : 0; } catch { /* default */ }
+
+      let maxValue = 1;
+      try { maxValue = typeof param.max === "number" ? param.max : 1; } catch { /* default */ }
+
+      let defaultValue = 0;
+      try { defaultValue = typeof param.defaultValue === "number" ? param.defaultValue : 0; } catch { /* default */ }
+
+      let isQuantized = false;
+      try { isQuantized = !!param.isQuantized; } catch { /* default */ }
+
       const valueItems: string[] = [];
       try {
         const items = param.valueItems;
-        if (items) {
+        if (items && Array.isArray(items)) {
           for (const item of items) {
-            valueItems.push(String(item));
+            if (item == null) {
+              valueItems.push("");
+            } else if (typeof item === "string") {
+              valueItems.push(item);
+            } else if (typeof item === "number") {
+              valueItems.push(String(item));
+            } else if (typeof item === "object") {
+              // Object item — try common properties
+              valueItems.push(item.display ?? item.name ?? item.label ?? item.value ?? String(item));
+            } else {
+              valueItems.push(String(item));
+            }
           }
         }
       } catch { /* no value items */ }
 
       params.push({
         name: param.name || "Unnamed",
-        value: param.value ?? 0,
-        minValue: param.min ?? 0,
-        maxValue: param.max ?? 1,
-        defaultValue: param.defaultValue ?? 0,
-        isQuantized: param.isQuantized ?? false,
+        value,
+        minValue,
+        maxValue,
+        defaultValue,
+        isQuantized,
         valueItems,
       });
     } catch { /* skip param */ }

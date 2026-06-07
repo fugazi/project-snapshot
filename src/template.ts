@@ -549,16 +549,38 @@ function renderDeviceAccordion(device: SnapshotDevice): string {
 }
 
 function renderParam(param: SnapshotParameter): string {
-  const range = param.maxValue - param.minValue;
-  const pct = range > 0 ? Math.round(((param.value - param.minValue) / range) * 100) : 0;
-  const displayValue = param.isQuantized && param.valueItems.length > 0
-    ? param.valueItems[param.value] ?? param.value
-    : typeof param.value === "number" ? param.value.toFixed(2) : param.value;
+  // Safely get numeric value
+  const numValue = typeof param.value === "number" ? param.value : 0;
+  const numMin = typeof param.minValue === "number" ? param.minValue : 0;
+  const numMax = typeof param.maxValue === "number" ? param.maxValue : 1;
+  const range = numMax - numMin;
+  const pct = range > 0 ? Math.round(((numValue - numMin) / range) * 100) : 0;
+
+  // Determine display value
+  let displayValue: string;
+  if (param.isQuantized && param.valueItems.length > 0) {
+    // Quantized param — try to get the label from valueItems
+    const idx = Math.round(numValue);
+    const item = param.valueItems[idx];
+    displayValue = typeof item === "string" ? item : typeof item === "number" ? String(item) : (param.valueItems[0] != null ? String(param.valueItems[0]) : String(numValue));
+  } else if (typeof param.value === "number") {
+    // Continuous param — show clean number
+    displayValue = param.value % 1 === 0 ? String(param.value) : param.value.toFixed(2);
+  } else if (typeof param.value === "object" && param.value !== null) {
+    // Object value — try common properties
+    const obj = param.value as any;
+    displayValue = obj.display ?? obj.name ?? obj.value ?? obj.label ?? String(obj);
+  } else {
+    displayValue = String(param.value ?? "—");
+  }
+
+  // Escape the display value
+  const safeDisplay = esc(String(displayValue));
 
   return `              <div class="param-row">
                 <div class="param-name" title="${esc(param.name)}">${esc(param.name)}</div>
                 <div class="param-bar-track"><div class="param-bar-fill" style="width:${pct}%"></div></div>
-                <div class="param-value">${displayValue}</div>
+                <div class="param-value">${safeDisplay}</div>
               </div>`;
 }
 
