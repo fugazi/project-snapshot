@@ -3,8 +3,8 @@
 // Assembles data + template into the final HTML file
 // ──────────────────────────────────────────────
 
-import * as fs from "node:fs";
-import * as path from "node:path";
+import * as fs from "fs";
+import * as path from "path";
 import type { ProjectSnapshot } from "./types.js";
 import { renderTemplate } from "./template.js";
 

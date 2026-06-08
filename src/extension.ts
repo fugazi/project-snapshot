@@ -50,8 +50,14 @@ export function activate(activation: ActivationContext) {
       let sigDen = 4;
       try { scaleName = song.scaleName ?? "None"; } catch { /* default */ }
       try { rootNote = song.rootNote ?? 0; } catch { /* default */ }
-      try { sigNum = song.signatureNumerator ?? 4; } catch { /* default */ }
-      try { sigDen = song.signatureDenominator ?? 4; } catch { /* default */ }
+      // Song doesn't have signatureNumerator/signatureDenominator in SDK 1.0.0-beta
+      // Those properties belong to Scene; use defaults for the modal preview
+      try {
+        if (song.scenes.length > 0) {
+          sigNum = (song.scenes[0] as any).signatureNumerator ?? 4;
+          sigDen = (song.scenes[0] as any).signatureDenominator ?? 4;
+        }
+      } catch { /* default */ }
 
       const storageDir = context.environment.storageDirectory;
 
@@ -67,7 +73,7 @@ export function activate(activation: ActivationContext) {
         signatureDenominator: sigDen,
         scaleName,
         rootNote,
-        storageDir,
+        storageDir: storageDir ?? "",
       };
 
       const modalHtml = buildModalHtml(quickInfo);
@@ -144,10 +150,10 @@ async function runGeneration(
           tracks: snapshot.overview.trackCount,
           clips: snapshot.overview.totalClipCount,
           devices: snapshot.overview.totalDeviceCount,
+          tempo: snapshot.overview.tempo,
         });
 
         void context.ui.showModalDialog(successHtml, 420, 400).catch(() => {});
-
       } catch (e) {
         if (signal.aborted) return;
         console.error("❌ Project Snapshot error:", e);

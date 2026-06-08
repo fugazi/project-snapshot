@@ -139,11 +139,17 @@ function extractOverview(song: any): SnapshotOverview {
   let gridIsTriplet = false;
 
   try { tempo = song.tempo ?? 120; } catch { /* default */ }
-  try { sigNum = song.signatureNumerator ?? 4; } catch { /* default */ }
-  try { sigDen = song.signatureDenominator ?? 4; } catch { /* default */ }
+  // Song doesn't have signatureNumerator/signatureDenominator in SDK 1.0.0-beta
+  // Try to read from first scene, otherwise default to 4/4
+  try {
+    if (song.scenes && song.scenes.length > 0) {
+      sigNum = (song.scenes[0] as any).signatureNumerator ?? 4;
+      sigDen = (song.scenes[0] as any).signatureDenominator ?? 4;
+    }
+  } catch { /* default */ }
   try { rootNote = song.rootNote ?? 0; } catch { /* default */ }
   try { scaleName = song.scaleName ?? "None"; } catch { /* default */ }
-  try { scaleMode = song.scaleMode ?? 0; } catch { /* default */ }
+  try { scaleMode = song.scaleMode ? 1 : 0; } catch { /* default */ }
   try { scaleIntervals = song.scaleIntervals ?? []; } catch { /* default */ }
   try { gridQuantization = String(song.gridQuantization ?? "N/A"); } catch { /* default */ }
   try { gridIsTriplet = song.gridIsTriplet ?? false; } catch { /* default */ }
@@ -444,7 +450,9 @@ async function extractDeviceData(device: any): Promise<SnapshotDevice> {
             volume = await chainMixer.volume.getValue();
           }
         } catch { /* no mixer */ }
-        chains.push({ name: chain.name || "Unnamed Chain", mixerVolume: volume });
+        // Chain doesn't expose .name in SDK 1.0.0-beta
+        const chainName = (chain as any).name || `Chain ${chains.length + 1}`;
+        chains.push({ name: chainName, mixerVolume: volume });
       } catch { /* skip */ }
     }
   }
