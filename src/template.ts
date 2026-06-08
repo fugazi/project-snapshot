@@ -37,8 +37,8 @@ ${CSS}
       <a href="#insights" class="nav-link">Insights</a>
     </div>
     <div class="nav-right">
-      <button class="nav-share" onclick="shareReport()">🔗</button>
-      <button class="nav-print" onclick="window.print()">🖨️</button>
+      <button class="nav-share" onclick="shareReport()">🔗 Share</button>
+      <button class="nav-print" onclick="window.print()">🖨️ Print</button>
     </div>
   </nav>
 
@@ -153,9 +153,10 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .nav-link.active{color:var(--accent);background:var(--accent-bg);}
 .nav-right{display:flex;gap:8px;flex-shrink:0;}
 .nav-print,.nav-share{
-  font-size:13px;padding:6px 14px;border-radius:8px;
+  font-size:13px;padding:6px 16px;border-radius:8px;
   background:rgba(160,224,232,0.08);color:var(--fg-3);
   border:1px solid var(--line);transition:all 0.15s;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:5px;
 }
 .nav-print:hover,.nav-share:hover{background:rgba(160,224,232,0.14);color:var(--fg);}
 .nav-share{background:rgba(82,240,160,0.08);border-color:rgba(82,240,160,0.15);color:var(--green);}
@@ -563,26 +564,33 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 /* ── FLOATING SIDEBAR CARD ── */
 .float-card{
-  position:fixed;left:20px;bottom:24px;z-index:90;
+  position:fixed;left:20px;bottom:24px;z-index:9999;
   width:200px;padding:16px;
-  background:rgba(14,42,52,0.85);border:1px solid var(--line);
+  background:rgba(14,42,52,0.92);border:1px solid var(--line);
   border-radius:var(--radius-lg);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
   overflow:hidden;
   transition:opacity 0.4s,transform 0.4s;
+  box-shadow:0 4px 24px rgba(0,0,0,0.4);
 }
 .float-card.card-hidden{opacity:0;transform:translateY(20px);pointer-events:none;}
 /* Laser scan animation */
 .float-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent 0%,var(--accent) 30%,var(--hot) 70%,transparent 100%);
-  opacity:0.4;animation:laserScan 4s ease-in-out infinite;
+  opacity:0.5;
+  -webkit-animation:laserScan 4s ease-in-out infinite;
+  animation:laserScan 4s ease-in-out infinite;
   pointer-events:none;
+}
+@-webkit-keyframes laserScan{
+  0%{top:0;opacity:0.3;}
+  50%{top:calc(100% - 2px);opacity:0.6;}
+  100%{top:0;opacity:0.3;}
 }
 @keyframes laserScan{
   0%{top:0;opacity:0.3;}
-  50%{top:calc(100% - 2px);opacity:0.5;}
+  50%{top:calc(100% - 2px);opacity:0.6;}
   100%{top:0;opacity:0.3;}
 }
 /* Progress bar */
@@ -613,17 +621,18 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 /* ── SCROLL BUTTON ── */
 .scroll-btn{
-  position:fixed;right:20px;bottom:24px;z-index:90;
-  width:44px;height:44px;border-radius:50%;
+  position:fixed;right:20px;bottom:24px;z-index:9999;
+  width:48px;height:48px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  background:rgba(14,42,52,0.85);border:1px solid var(--line);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:rgba(14,42,52,0.92);border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   color:var(--accent);
-  font-size:20px;cursor:pointer;
+  font-size:22px;cursor:pointer;
   transition:all 0.25s;opacity:0;transform:scale(0.8);pointer-events:none;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
 }
 .scroll-btn.btn-visible{opacity:1;transform:scale(1);pointer-events:auto;}
-.scroll-btn:hover{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 16px var(--accent-bg);}
+.scroll-btn:hover{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 20px var(--accent-bg);}
 
 /* ── FOOTER ── */
 .report-footer{
@@ -648,10 +657,11 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
-  .top-nav{padding:10px 12px;gap:8px;}
+  .top-nav{padding:10px 10px;gap:6px;flex-wrap:nowrap;}
   .nav-brand{font-size:14px;}
-  .nav-links{gap:2px;-webkit-overflow-scrolling:touch;}
+  .nav-links{gap:2px;-webkit-overflow-scrolling:touch;overflow-x:auto;flex-shrink:1;min-width:0;}
   .nav-link{font-size:12px;padding:5px 8px;}
+  .nav-right{flex-shrink:0;}
   .nav-right .nav-share,.nav-right .nav-print{font-size:12px;padding:5px 10px;}
   .hero{min-height:65vh;padding:80px 16px 50px;}
   .hero-title{font-size:clamp(24px,6vw,44px);}
@@ -664,12 +674,13 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .track-grid{grid-template-columns:1fr;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
   .float-card{left:10px;bottom:14px;width:150px;padding:12px;font-size:11px;}
-  .scroll-btn{right:10px;bottom:14px;width:38px;height:38px;font-size:18px;}
+  .scroll-btn{right:10px;bottom:14px;width:40px;height:40px;font-size:18px;}
 }
 @media(max-width:480px){
-  .top-nav{padding:8px 8px;gap:6px;}
+  .top-nav{padding:8px 6px;gap:4px;}
   .nav-brand{font-size:13px;}
   .nav-link{font-size:11px;padding:4px 6px;}
+  .nav-right .nav-share span,.nav-right .nav-print span{display:none;}
   .hero{min-height:55vh;padding:70px 12px 40px;}
   .hero-stats{grid-template-columns:repeat(2,1fr);gap:8px;}
   .hero-stat{padding:12px 8px;}
@@ -746,14 +757,17 @@ const JS = `
   }
 
   // Floating card + progress bar
-  const floatCard = document.getElementById('floatCard');
-  const progressFill = document.getElementById('progressFill');
-  const progressPct = document.getElementById('progressPct');
-  const scrollBtn = document.getElementById('scrollBtn');
+  var floatCard = document.getElementById('floatCard');
+  var progressFill = document.getElementById('progressFill');
+  var progressPct = document.getElementById('progressPct');
+  var scrollBtn = document.getElementById('scrollBtn');
+
+  // Debug: verify elements exist
+  console.log('[Snapshot] floatCard:', !!floatCard, 'scrollBtn:', !!scrollBtn, 'progressFill:', !!progressFill);
 
   function updateProgress() {
     var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    var docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+    var docHeight = Math.max(document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0) - (window.innerHeight || document.documentElement.clientHeight || 0);
     var pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0;
 
     if (progressFill) progressFill.style.width = pct + '%';
@@ -761,14 +775,26 @@ const JS = `
 
     // Show/hide floating card after scrolling past hero
     if (floatCard) {
-      if (scrollTop > 200) floatCard.classList.remove('card-hidden');
-      else floatCard.classList.add('card-hidden');
+      if (scrollTop > 200) {
+        floatCard.className = 'float-card';
+        floatCard.style.opacity = '1';
+        floatCard.style.transform = 'translateY(0)';
+        floatCard.style.pointerEvents = 'auto';
+      } else {
+        floatCard.className = 'float-card card-hidden';
+        floatCard.style.opacity = '0';
+        floatCard.style.transform = 'translateY(20px)';
+        floatCard.style.pointerEvents = 'none';
+      }
     }
 
     // Scroll button: show after a bit of scrolling
     if (scrollBtn) {
       if (scrollTop > 150) {
-        scrollBtn.classList.add('btn-visible');
+        scrollBtn.style.opacity = '1';
+        scrollBtn.style.transform = 'scale(1)';
+        scrollBtn.style.pointerEvents = 'auto';
+        scrollBtn.className = 'scroll-btn btn-visible';
         if (docHeight > 0 && scrollTop >= docHeight - 100) {
           scrollBtn.textContent = '\u2191';
           scrollBtn.title = 'Back to top';
@@ -777,18 +803,30 @@ const JS = `
           scrollBtn.title = 'Scroll down';
         }
       } else {
-        scrollBtn.classList.remove('btn-visible');
+        scrollBtn.style.opacity = '0';
+        scrollBtn.style.transform = 'scale(0.8)';
+        scrollBtn.style.pointerEvents = 'none';
+        scrollBtn.className = 'scroll-btn';
       }
     }
   }
 
-  window.addEventListener('scroll', updateProgress, {passive: true});
-  // Also run on load and resize
-  window.addEventListener('load', updateProgress);
-  window.addEventListener('resize', updateProgress);
-  // Initial check
+  // Multiple event listeners for maximum compatibility
+  if (window.addEventListener) {
+    window.addEventListener('scroll', updateProgress, false);
+    window.addEventListener('load', updateProgress, false);
+    window.addEventListener('resize', updateProgress, false);
+  }
+  // Also try attachEvent for older WebViews
+  if (window.attachEvent) {
+    window.attachEvent('onscroll', updateProgress);
+    window.attachEvent('onload', updateProgress);
+    window.attachEvent('onresize', updateProgress);
+  }
+  // Delayed initial checks
   setTimeout(updateProgress, 100);
   setTimeout(updateProgress, 500);
+  setTimeout(updateProgress, 1500);
 
   // Scroll toggle
   window.toggleScroll = function() {
