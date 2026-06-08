@@ -15,6 +15,8 @@ import type {
   SnapshotCuePoint,
   SnapshotMidiInfo,
   SnapshotSuggestion,
+  SnapshotMixer,
+  SnapshotSend,
 } from "./types.js";
 import {
   midiNoteToName,
@@ -51,11 +53,28 @@ export async function extractSnapshot(
   await updateProgress("Extracting tracks...", 15);
   const tracks: SnapshotTrack[] = [];
 
+  // Regular tracks (Audio + MIDI)
   for (let i = 0; i < song.tracks.length; i++) {
     const track = song.tracks[i]!;
-    const pct = 15 + Math.round((i / song.tracks.length) * 50);
-    await updateProgress(`Analyzing track ${i + 1}/${song.tracks.length}: ${track.name}`, pct);
+    const pct = 15 + Math.round((i / (song.tracks.length + song.returnTracks.length + 1)) * 50);
+    await updateProgress(`Analyzing track ${tracks.length + 1}: ${track.name}`, pct);
     tracks.push(extractTrack(track));
+  }
+
+  // Return tracks
+  if (song.returnTracks) {
+    for (const rt of song.returnTracks) {
+      try {
+        tracks.push(extractTrack(rt));
+      } catch { /* skip broken return track */ }
+    }
+  }
+
+  // Master track
+  if (song.mainTrack) {
+    try {
+      tracks.push(extractTrack(song.mainTrack));
+    } catch { /* skip broken master track */ }
   }
 
   await updateProgress("Extracting scenes...", 70);
@@ -135,7 +154,7 @@ function extractOverview(song: any): SnapshotOverview {
     scaleName,
     scaleMode,
     scaleIntervals,
-    trackCount: song.tracks.length,
+    trackCount: song.tracks.length + (song.returnTracks?.length ?? 0) + 1, // +1 for master
     sceneCount: song.scenes.length,
     cuePointCount: song.cuePoints.length,
     audioTrackCount,
@@ -180,6 +199,7 @@ function extractTrack(track: any): SnapshotTrack {
 
   const clips = extractClips(track);
   const devices = extractDevices(track);
+  const mixer = extractMixer(track);
 
   return {
     name: track.name,
@@ -194,7 +214,70 @@ function extractTrack(track: any): SnapshotTrack {
     groupTrackName,
     clips,
     devices,
+    mixer,
   };
+}
+
+// ── Mixer ──
+
+function extractMixer(track: any): import("./types.js").SnapshotMixer {
+  let volume = 0.75;
+  let volumeDb = "0.0 dB";
+  let panning = 0;
+  const sends: import("./types.js").SnapshotSend[] = [];
+
+  try {
+    const mx = track.mixer;
+    if (mx) {
+      // Volume
+      try {
+        const vol = mx.volume;
+        if (vol) {
+          const raw = typeof vol.value === 'number' ? vol.value : 0.75;
+          volume = raw;
+          // Convert to dB: Live's volume range is roughly -inf to +6dB
+          // At value 0.75 ≈ 0dB, 0.0 = -inf, 1.0 = +6dB
+          if (raw < 0.001) volumeDb = "-∞ dB";
+          else {
+            const db = 20 * Math.log10(raw / 0.75);
+            volumeDb = (db >= 0 ? "+" : "") + db.toFixed(1) + " dB";
+          }
+        }
+      } catch { /* no volume */ }
+
+      // Panning
+      try {
+        const pan = mx.panning;
+        if (pan) {
+          panning = typeof pan.value === 'number' ? pan.value : 0;
+        }
+      } catch { /* no panning */ }
+
+      // Sends
+      try {
+        const sendList = mx.sends;
+        if (sendList && Array.isArray(sendList)) {
+          for (let i = 0; i < sendList.length; i++) {
+            const s = sendList[i];
+            if (!s) continue;
+            const raw = typeof s.value === 'number' ? s.value : 0;
+            let db = "-∞ dB";
+            if (raw >= 0.001) {
+              const dbVal = 20 * Math.log10(raw / 0.75);
+              db = (dbVal >= 0 ? "+" : "") + dbVal.toFixed(1) + " dB";
+            }
+            sends.push({
+              name: String.fromCharCode(65 + i), // A, B, C...
+              value: raw,
+              valueDb: db,
+            });
+          }
+        }
+      } catch { /* no sends */ }
+    }
+  } catch { /* no mixer at all */ }
+
+  return { volume, volumeDb, panning, sends };
 }
 
 // ── Clips ──

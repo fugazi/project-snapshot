@@ -4,8 +4,8 @@
 // Full-page scroll · Glass cards · Hero section
 // ──────────────────────────────────────────────
 
-import type { ProjectSnapshot, SnapshotTrack, SnapshotClip, SnapshotDevice, SnapshotParameter } from "./types.js";
-import { getTrackTypeName, getTrackTypeEmoji, midiNoteToName } from "./types.js";
+import type { ProjectSnapshot, SnapshotTrack, SnapshotDevice, SnapshotParameter } from "./types.js";
+import { getTrackTypeName, getTrackTypeEmoji } from "./types.js";
 
 export function renderTemplate(data: ProjectSnapshot): string {
   const o = data.overview;
@@ -30,7 +30,7 @@ ${CSS}
     <div class="nav-links">
       <a href="#overview" class="nav-link active">Overview</a>
       <a href="#tracks" class="nav-link">Tracks</a>
-      <a href="#clips" class="nav-link">Clips</a>
+      <a href="#clips" class="nav-link">Mixer</a>
       <a href="#devices" class="nav-link">Devices</a>
       <a href="#scenes" class="nav-link">Scenes</a>
       <a href="#notes" class="nav-link">Notes</a>
@@ -280,6 +280,12 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   background-clip:text;
 }
 .section-desc{font-size:16px;color:var(--fg-4);max-width:560px;margin:0 auto;line-height:1.7;}
+.legend{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px;
+  margin-top:10px;font-size:13px;color:var(--fg-4);
+}
+.legend strong{color:var(--fg-2);}
+.legend-item{white-space:nowrap;}
 
 /* ── GLASS CARD ── */
 .card{
@@ -343,21 +349,118 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .badge-mute{color:var(--fg-4);background:rgba(160,224,232,0.06);border:1px solid var(--line);}
 .badge-solo{color:var(--yellow);background:var(--yellow-bg);border:1px solid rgba(255,224,102,0.15);}
 
-/* ── CLIP TABLE ── */
-.clip-group{margin-bottom:20px;}
-.clip-group-title{font-weight:600;font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--fg);}
-.table-card{
-  background:var(--glass);border:1px solid var(--line);
-  border-radius:var(--radius);overflow:hidden;
-  backdrop-filter:blur(12px);
+/* ── MIXING CONSOLE ── */
+.console-wrap{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:16px;margin-bottom:8px;
 }
-table{width:100%;border-collapse:collapse;font-size:14px;}
-thead{background:rgba(19,52,59,0.6);}
-th{font-family:var(--mono);font-size:11px;letter-spacing:0.10em;text-transform:uppercase;color:var(--fg-3);text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);}
-td{padding:10px 16px;border-bottom:1px solid var(--line);color:var(--fg-2);}
-tr:last-child td{border-bottom:none;}
-tbody tr{transition:background 0.1s;}
-tbody tr:hover{background:rgba(62,240,224,0.04);}
+.console-wrap::-webkit-scrollbar{height:6px;}
+.console-wrap::-webkit-scrollbar-thumb{background:var(--fg-5);border-radius:3px;}
+.console-grid{
+  display:flex;gap:6px;min-width:max-content;
+}
+.channel{
+  width:72px;flex-shrink:0;
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);padding:10px 6px 8px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;align-items:center;
+  transition:border-color 0.2s,transform 0.15s;
+}
+.channel:hover{border-color:var(--accent);transform:translateY(-2px);}
+.channel.master{
+  border-color:rgba(255,224,102,0.25);background:rgba(255,224,102,0.04);
+}
+.channel.master:hover{border-color:rgba(255,224,102,0.45);}
+.channel.return-ch{
+  border-color:rgba(160,122,255,0.20);
+}
+.channel.return-ch:hover{border-color:rgba(160,122,255,0.40);}
+.ch-name{
+  font-size:10px;font-weight:600;color:var(--fg);text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  width:100%;margin-bottom:4px;line-height:1.3;
+}
+.ch-type{
+  font-family:var(--mono);font-size:8px;color:var(--fg-4);
+  letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;
+}
+.ch-type.master{color:var(--yellow);}
+.ch-type.return-ch{color:var(--purple);}
+/* Pan indicator */
+.ch-pan-wrap{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  gap:2px;margin-bottom:6px;
+}
+.ch-pan-label{font-family:var(--mono);font-size:7px;color:var(--fg-5);}
+.ch-pan-track{
+  width:32px;height:3px;border-radius:2px;background:var(--bg-2);position:relative;
+}
+.ch-pan-dot{
+  position:absolute;top:-2px;width:7px;height:7px;border-radius:50%;
+  background:var(--accent);border:1px solid var(--accent);
+  transform:translateX(-50%);
+  transition:left 0.1s;
+}
+/* Fader */
+.ch-fader-wrap{
+  width:100%;position:relative;margin-bottom:4px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.ch-fader-db{
+  font-family:var(--mono);font-size:8px;color:var(--fg-3);margin-bottom:4px;
+  text-align:center;
+}
+.ch-fader-track{
+  width:12px;height:80px;border-radius:3px;
+  background:var(--bg-2);position:relative;overflow:hidden;
+  border:1px solid var(--line);
+}
+.ch-fader-fill{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,var(--accent),var(--hot));
+  border-radius:2px;transition:height 0.15s;
+}
+/* dB scale lines */
+.ch-fader-scale{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  pointer-events:none;
+}
+.ch-fader-scale span{
+  position:absolute;right:0;width:4px;height:1px;
+  background:var(--line-2);display:block;
+}
+/* Sends */
+.ch-sends{
+  width:100%;display:flex;flex-direction:column;gap:3px;
+  margin-top:6px;padding-top:6px;border-top:1px solid var(--line);
+}
+.ch-send{
+  display:flex;align-items:center;gap:3px;
+}
+.ch-send-lbl{font-family:var(--mono);font-size:7px;color:var(--fg-4);width:10px;}
+.ch-send-track{
+  flex:1;height:3px;border-radius:2px;background:var(--bg-2);overflow:hidden;
+}
+.ch-send-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),var(--purple));
+  transition:width 0.15s;
+}
+/* Console separator */
+.console-sep{
+  width:1px;flex-shrink:0;
+  background:linear-gradient(to bottom,transparent,var(--line-2),transparent);
+  margin:0 4px;
+}
+.console-label{
+  position:relative;
+}
+.console-label .lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--fg-5);writing-mode:vertical-rl;
+  text-orientation:mixed;transform:rotate(180deg);
+}
 
 /* ── DEVICE RACK ── */
 .dev-group{margin-bottom:16px;}
@@ -799,6 +902,13 @@ function renderTracksSection(data: ProjectSnapshot): string {
     <div class="section-badge hot">🎵 Tracks</div>
     <h2 class="section-title">Your <span class="grad">Tracks</span></h2>
     <p class="section-desc">${data.tracks.length} tracks in your project — audio, MIDI, return, and master</p>
+    <div class="legend">
+      <span class="legend-item">🎹 <strong>Clips</strong></span>
+      <span class="legend-item">🔌 <strong>Devices</strong></span>
+      <span class="legend-item">🔴 Armed</span>
+      <span class="legend-item">🔇 Muted</span>
+      <span class="legend-item">🎧 Soloed</span>
+    </div>
   </div>
   <div class="track-grid">
     ${data.tracks.map(t => renderTrackCard(t)).join("")}
@@ -833,40 +943,73 @@ function renderTrackCard(t: SnapshotTrack): string {
 // ══════════════════════════════════════
 
 function renderClipsSection(data: ProjectSnapshot): string {
-  const tracksWithClips = data.tracks.filter(t => t.clips.length > 0);
+  // Separate tracks by type for grouping
+  const regularTracks = data.tracks.filter(t => t.type !== 'return' && t.type !== 'master');
+  const returnTracks = data.tracks.filter(t => t.type === 'return');
+  const masterTrack = data.tracks.find(t => t.type === 'master');
+
   return `<div class="section-divider"></div>
 <section class="section" id="clips">
   <div class="section-head">
-    <div class="section-badge purple">🎹 Clips</div>
-    <h2 class="section-title">Clip <span class="grad">Details</span></h2>
-    <p class="section-desc">${data.overview.totalClipCount} clips across your project — expand to see warp, loop, and MIDI info</p>
+    <div class="section-badge purple">🎛️ Mixer</div>
+    <h2 class="section-title">Mixing <span class="grad">Console</span></h2>
+    <p class="section-desc">Channel levels, panning and sends for all ${data.tracks.length} tracks — scroll horizontally to explore</p>
   </div>
-  ${tracksWithClips.map(t => renderClipGroup(t)).join("")}
+  <div class="console-wrap">
+    <div class="console-grid">
+      ${regularTracks.map(t => renderChannel(t)).join("")}
+      ${returnTracks.length > 0 ? `<div class="console-sep"></div><div class="console-label"><span class="lbl">Returns</span></div>` + returnTracks.map(t => renderChannel(t)).join("") : ""}
+      ${masterTrack ? `<div class="console-sep"></div>` + renderChannel(masterTrack) : ""}
+    </div>
+  </div>
 </section>`;
 }
 
-function renderClipGroup(track: SnapshotTrack): string {
-  return `<div class="clip-group">
-    <div class="clip-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
-    <div class="table-card"><table>
-      <thead><tr><th>Name</th><th>Type</th><th>Warp</th><th>Loop</th><th>MIDI</th></tr></thead>
-      <tbody>${track.clips.map(c => renderClipRow(c)).join("")}</tbody>
-    </table></div>
-  </div>`;
-}
+function renderChannel(track: SnapshotTrack): string {
+  const isMaster = track.type === 'master';
+  const isReturn = track.type === 'return';
+  const cls = isMaster ? 'master' : isReturn ? 'return-ch' : '';
 
-function renderClipRow(c: SnapshotClip): string {
-  const typeE = c.type === "audio" ? "🎙️" : "🎹";
-  const loop = c.isLooping !== null ? (c.isLooping ? "🔁" : "➡️") : "—";
-  const warp = c.warpMode ?? (c.type === "midi" ? "—" : "—");
-  const midi = c.midiInfo && c.midiInfo.noteCount > 0
-    ? `${c.midiInfo.noteCount} notes (${midiNoteToName(c.midiInfo.lowestNote)}–${midiNoteToName(c.midiInfo.highestNote)})`
-    : "—";
-  return `<tr>
-    <td style="color:var(--fg)">${esc(c.name)}</td>
-    <td>${typeE} ${c.type.toUpperCase()}</td>
-    <td>${warp}</td><td>${loop}</td><td>${midi}</td>
-  </tr>`;
+  // Fader height (0-100% based on volume)
+  const faderPct = Math.round(track.mixer.volume * 100);
+
+  // Pan position (map -1..1 to 10%..90%)
+  const panPct = Math.round(50 + (track.mixer.panning * 40));
+
+  // Sends
+  let sendsHtml = '';
+  if (track.mixer.sends.length > 0 && !isMaster) {
+    sendsHtml = `<div class="ch-sends">${track.mixer.sends.map(s => {
+      const sendPct = Math.round(s.value * 100);
+      return `<div class="ch-send">
+        <span class="ch-send-lbl">${esc(s.name)}</span>
+        <div class="ch-send-track"><div class="ch-send-fill" style="width:${sendPct}%"></div></div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  // Scale lines (25%, 50%, 75%)
+  const scaleLines = `<div class="ch-fader-scale">
+    <span style="top:25%"></span><span style="top:50%"></span><span style="top:75%"></span>
+  </div>`;
+
+  return `<div class="channel ${cls}">
+    <div class="ch-name">${esc(track.name)}</div>
+    <div class="ch-type ${cls}">${isMaster ? 'Master' : isReturn ? 'Return' : getTrackTypeName(track.type)}</div>
+    <div class="ch-pan-wrap">
+      <span class="ch-pan-label">L</span>
+      <div class="ch-pan-track"><div class="ch-pan-dot" style="left:${panPct}%"></div></div>
+      <span class="ch-pan-label">R</span>
+    </div>
+    <div class="ch-fader-wrap">
+      <div class="ch-fader-db">${esc(track.mixer.volumeDb)}</div>
+      <div class="ch-fader-track">
+        <div class="ch-fader-fill" style="height:${faderPct}%"></div>
+        ${scaleLines}
+      </div>
+    </div>
+    ${sendsHtml}
+  </div>`;
 }
 
 // ══════════════════════════════════════

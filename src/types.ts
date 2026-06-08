@@ -34,6 +34,7 @@ export interface SnapshotTrack {
   groupTrackName: string | null;
   clips: SnapshotClip[];
   devices: SnapshotDevice[];
+  mixer: SnapshotMixer;
 }
 
 export interface SnapshotClip {
@@ -77,6 +78,19 @@ export interface SnapshotParameter {
 export interface SnapshotChain {
   name: string;
   mixerVolume: number;
+}
+
+export interface SnapshotMixer {
+  volume: number;       // 0.0 - 1.0 normalized
+  volumeDb: string;     // display value like "-3.2 dB"
+  panning: number;      // -1.0 to 1.0
+  sends: SnapshotSend[];
+}
+
+export interface SnapshotSend {
+  name: string;         // e.g. "A", "B", "C"
+  value: number;        // 0.0 - 1.0
+  valueDb: string;      // display value
 }
 
 export interface SnapshotScene {
