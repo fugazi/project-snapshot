@@ -56,16 +56,19 @@ export async function extractSnapshot(
   // Regular tracks (Audio + MIDI)
   for (let i = 0; i < song.tracks.length; i++) {
     const track = song.tracks[i]!;
-    const pct = 15 + Math.round((i / (song.tracks.length + song.returnTracks.length + 1)) * 50);
+    const pct = 15 + Math.round((i / (song.tracks.length + (song.returnTracks?.length ?? 0) + 1)) * 45);
     await updateProgress(`Analyzing track ${tracks.length + 1}: ${track.name}`, pct);
-    tracks.push(extractTrack(track));
+    tracks.push(await extractTrack(track));
   }
 
   // Return tracks
   if (song.returnTracks) {
-    for (const rt of song.returnTracks) {
+    for (let ri = 0; ri < song.returnTracks.length; ri++) {
+      const rt = song.returnTracks[ri];
       try {
-        tracks.push(extractTrack(rt));
+        const pct = 60 + Math.round((ri / song.returnTracks.length) * 5);
+        await updateProgress(`Analyzing return track: ${rt.name}`, pct);
+        tracks.push(await extractTrack(rt, "return"));
       } catch { /* skip broken return track */ }
     }
   }
@@ -73,7 +76,8 @@ export async function extractSnapshot(
   // Master track
   if (song.mainTrack) {
     try {
-      tracks.push(extractTrack(song.mainTrack));
+      await updateProgress("Analyzing master track...", 68);
+      tracks.push(await extractTrack(song.mainTrack, "master"));
     } catch { /* skip broken master track */ }
   }
 
@@ -181,11 +185,19 @@ function countClipsInTrack(track: any): number {
 
 // ── Track ──
 
-function extractTrack(track: any): SnapshotTrack {
+async function extractTrack(track: any, forceType?: "return" | "master"): Promise<SnapshotTrack> {
   let type: "audio" | "midi" | "return" | "master" = "audio";
-  if (track instanceof AudioTrack) type = "audio";
-  else if (track instanceof MidiTrack) type = "midi";
-  else type = "return";
+  if (forceType === "master") {
+    type = "master";
+  } else if (forceType === "return") {
+    type = "return";
+  } else if (track instanceof AudioTrack) {
+    type = "audio";
+  } else if (track instanceof MidiTrack) {
+    type = "midi";
+  } else {
+    type = "return";
+  }
 
   let groupTrackName: string | null = null;
   let hasGroupTrack = false;
@@ -198,15 +210,15 @@ function extractTrack(track: any): SnapshotTrack {
   } catch { /* no group track */ }
 
   const clips = extractClips(track);
-  const devices = extractDevices(track);
-  const mixer = extractMixer(track);
+  const devices = await extractDevices(track.devices);
+  const mixer = await extractMixer(track);
 
   return {
     name: track.name,
     type,
-    arm: track.arm ?? false,
-    mute: track.mute ?? false,
-    solo: track.solo ?? false,
+    arm: type === "master" ? false : (track.arm ?? false),
+    mute: type === "master" ? false : (track.mute ?? false),
+    solo: type === "master" ? false : (track.solo ?? false),
     mutedViaSolo: track.mutedViaSolo ?? false,
     clipCount: clips.length,
     deviceCount: devices.length,
@@ -219,8 +231,11 @@ function extractTrack(track: any): SnapshotTrack {
 }
 
 // ── Mixer ──
+// CRITICAL: The Ableton Extensions SDK uses DeviceParameter objects for mixer properties.
+// DeviceParameter.getValue() is ASYNC — it returns a Promise<number>.
+// Reading .value synchronously returns undefined (the getter doesn't exist on DeviceParameter).
 
-function extractMixer(track: any): import("./types.js").SnapshotMixer {
+async function extractMixer(track: any): Promise<import("./types.js").SnapshotMixer> {
   let volume = 0.75;
   let volumeDb = "0.0 dB";
   let panning = 0;
@@ -229,38 +244,48 @@ function extractMixer(track: any): import("./types.js").SnapshotMixer {
   try {
     const mx = track.mixer;
     if (mx) {
-      // Volume
+      // Volume — mx.volume is a DeviceParameter, must await getValue()
       try {
-        const vol = mx.volume;
-        if (vol) {
-          const raw = typeof vol.value === 'number' ? vol.value : 0.75;
-          volume = raw;
-          // Convert to dB: Live's volume range is roughly -inf to +6dB
-          // At value 0.75 ≈ 0dB, 0.0 = -inf, 1.0 = +6dB
-          if (raw < 0.001) volumeDb = "-∞ dB";
-          else {
-            const db = 20 * Math.log10(raw / 0.75);
-            volumeDb = (db >= 0 ? "+" : "") + db.toFixed(1) + " dB";
+        const volParam = mx.volume;
+        if (volParam && typeof volParam.getValue === "function") {
+          const raw = await volParam.getValue();
+          if (typeof raw === "number") {
+            volume = raw;
+            // Convert to dB: Live's internal volume 0.0 = -inf, ~0.75 ≈ 0dB, 1.0 ≈ +6dB
+            if (raw < 0.001) volumeDb = "-∞ dB";
+            else {
+              const db = 20 * Math.log10(raw / 0.75);
+              volumeDb = (db >= 0 ? "+" : "") + db.toFixed(1) + " dB";
+            }
           }
         }
       } catch { /* no volume */ }
 
-      // Panning
+      // Panning — mx.panning is a DeviceParameter, must await getValue()
       try {
-        const pan = mx.panning;
-        if (pan) {
-          panning = typeof pan.value === 'number' ? pan.value : 0;
+        const panParam = mx.panning;
+        if (panParam && typeof panParam.getValue === "function") {
+          const raw = await panParam.getValue();
+          if (typeof raw === "number") {
+            panning = raw;
+          }
         }
       } catch { /* no panning */ }
 
-      // Sends
+      // Sends — mx.sends is DeviceParameter[], must await getValue() on each
       try {
-        const sendList = mx.sends;
-        if (sendList && Array.isArray(sendList)) {
-          for (let i = 0; i < sendList.length; i++) {
-            const s = sendList[i];
+        const sendParams = mx.sends;
+        if (sendParams && Array.isArray(sendParams)) {
+          for (let i = 0; i < sendParams.length; i++) {
+            const s = sendParams[i];
             if (!s) continue;
-            const raw = typeof s.value === 'number' ? s.value : 0;
+            let raw = 0;
+            if (typeof s.getValue === "function") {
+              try {
+                raw = await s.getValue();
+                if (typeof raw !== "number") raw = 0;
+              } catch { raw = 0; }
+            }
             let db = "-∞ dB";
             if (raw >= 0.001) {
               const dbVal = 20 * Math.log10(raw / 0.75);
@@ -384,34 +409,41 @@ function extractMidiInfo(midiClip: any): SnapshotMidiInfo | null {
 
 // ── Devices ──
 
-function extractDevices(track: any): SnapshotDevice[] {
+async function extractDevices(deviceList: any): Promise<SnapshotDevice[]> {
   const devices: SnapshotDevice[] = [];
 
-  if (!track.devices) return devices;
+  if (!deviceList) return devices;
 
-  for (const device of track.devices) {
+  for (const device of deviceList) {
     try {
-      devices.push(extractDeviceData(device));
-    } catch { /* skip broken device */ }
+      devices.push(await extractDeviceData(device));
+    } catch (e) {
+      console.error("Error extracting device:", device.name, e);
+    }
   }
 
   return devices;
 }
 
-function extractDeviceData(device: any): SnapshotDevice {
+async function extractDeviceData(device: any): Promise<SnapshotDevice> {
   let type: "device" | "rack" | "simpler" | "drumRack" = "device";
   if (device instanceof DrumRack) type = "drumRack";
   else if (device instanceof RackDevice) type = "rack";
   else if (device instanceof Simpler) type = "simpler";
 
-  const parameters = extractParameters(device);
+  const parameters = await extractParameters(device.parameters);
 
   const chains: SnapshotChain[] = [];
   if ((device instanceof RackDevice || device instanceof DrumRack) && device.chains) {
     for (const chain of device.chains) {
       try {
         let volume = 0;
-        try { volume = chain.mixer?.volume ?? 0; } catch { /* no mixer */ }
+        try {
+          const chainMixer = chain.mixer;
+          if (chainMixer && chainMixer.volume && typeof chainMixer.volume.getValue === "function") {
+            volume = await chainMixer.volume.getValue();
+          }
+        } catch { /* no mixer */ }
         chains.push({ name: chain.name || "Unnamed Chain", mixerVolume: volume });
       } catch { /* skip */ }
     }
@@ -426,23 +458,25 @@ function extractDeviceData(device: any): SnapshotDevice {
   };
 }
 
-function extractParameters(device: any): SnapshotParameter[] {
+// CRITICAL: DeviceParameter.getValue() is ASYNC.
+// We must await each param.getValue() to get the actual current value.
+async function extractParameters(paramList: any): Promise<SnapshotParameter[]> {
   const params: SnapshotParameter[] = [];
 
-  if (!device.parameters) return params;
+  if (!paramList) return params;
 
-  for (const param of device.parameters) {
+  for (const param of paramList) {
     try {
-      // Safely extract primitive values
-      const rawValue = param.value;
+      // getValue() is async — returns Promise<number>
       let value: number = 0;
-      if (typeof rawValue === "number") {
-        value = rawValue;
-      } else if (typeof rawValue === "object" && rawValue !== null) {
-        // Object value — try to extract a number from it
-        value = rawValue.value ?? rawValue.raw ?? rawValue.display ?? 0;
-        if (typeof value !== "number") value = 0;
-      }
+      try {
+        if (typeof param.getValue === "function") {
+          const rawValue = await param.getValue();
+          if (typeof rawValue === "number") {
+            value = rawValue;
+          }
+        }
+      } catch { /* default to 0 */ }
 
       let minValue = 0;
       try { minValue = typeof param.min === "number" ? param.min : 0; } catch { /* default */ }
@@ -468,7 +502,6 @@ function extractParameters(device: any): SnapshotParameter[] {
             } else if (typeof item === "number") {
               valueItems.push(String(item));
             } else if (typeof item === "object") {
-              // Object item — try common properties
               valueItems.push(item.display ?? item.name ?? item.label ?? item.value ?? String(item));
             } else {
               valueItems.push(String(item));

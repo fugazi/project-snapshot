@@ -30,7 +30,7 @@ ${CSS}
     <div class="nav-links">
       <a href="#overview" class="nav-link active">Overview</a>
       <a href="#tracks" class="nav-link">Tracks</a>
-      <a href="#clips" class="nav-link">Mixer</a>
+      <a href="#mixer" class="nav-link">Mixer</a>
       <a href="#devices" class="nav-link">Devices</a>
       <a href="#scenes" class="nav-link">Scenes</a>
       <a href="#notes" class="nav-link">Notes</a>
@@ -463,67 +463,133 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   text-orientation:mixed;transform:rotate(180deg);
 }
 
-/* ── DEVICE RACK ── */
-.dev-group{margin-bottom:16px;}
-.dev-group-title{font-weight:600;font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--fg);}
-.dev-rack{
+/* ── DEVICE SECTION (REFACTORED) ── */
+.dev-search-wrap{margin-bottom:20px;}
+.dev-search{
+  width:100%;padding:12px 16px 12px 40px;
+  font-family:var(--sans);font-size:14px;color:var(--fg);
   background:var(--glass);border:1px solid var(--line);
-  border-radius:var(--radius);overflow:hidden;margin-bottom:8px;
-  backdrop-filter:blur(12px);
+  border-radius:var(--radius-lg);outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
 }
-.dev-header{
-  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+.dev-search::placeholder{color:var(--fg-4);}
+.dev-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.dev-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+
+/* Track accordion */
+.dev-track{margin-bottom:16px;}
+.dev-track-head{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 18px;cursor:pointer;
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  transition:all 0.2s;
+}
+.dev-track-head:hover{border-color:rgba(62,240,224,0.3);background:rgba(62,240,224,0.03);}
+.dev-track-head.open{border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-color:rgba(62,240,224,0.25);}
+.dev-track-icon{font-size:22px;}
+.dev-track-info{flex:1;min-width:0;}
+.dev-track-name{font-weight:600;font-size:16px;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dev-track-meta{font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-top:2px;}
+.dev-track-badge{
+  font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:6px;
+  background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);
+  white-space:nowrap;
+}
+.dev-track-chevron{color:var(--fg-4);transition:transform 0.25s;font-size:14px;}
+.dev-track-head.open .dev-track-chevron{transform:rotate(90deg);}
+
+.dev-track-body{
+  max-height:0;overflow:hidden;
+  transition:max-height 0.4s ease-out;
+  border:1px solid transparent;border-top:none;
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+}
+.dev-track-body.open{max-height:50000px;border-color:var(--line);}
+.dev-track-inner{padding:8px 12px 16px;}
+
+/* Device cards */
+.dev-card{
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--radius);margin-bottom:10px;
+  overflow:hidden;transition:all 0.2s;
+}
+.dev-card:hover{border-color:rgba(62,240,224,0.2);}
+.dev-card-head{
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
   cursor:pointer;transition:background 0.15s;
 }
-.dev-header:hover{background:rgba(62,240,224,0.04);}
-.dev-h-left{display:flex;align-items:center;gap:12px;}
-.dev-emoji{font-size:20px;}
-.dev-name{font-weight:600;font-size:15px;color:var(--fg);}
-.dev-type{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);}
-.dev-count{font-family:var(--mono);font-size:11px;color:var(--fg-4);}
-.dev-chevron{color:var(--fg-4);transition:transform 0.2s;font-size:13px;}
-.dev-rack.open .dev-chevron{transform:rotate(180deg);}
-.dev-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;}
-.dev-rack.open .dev-body{max-height:5000px;}
+.dev-card-head:hover{background:rgba(62,240,224,0.04);}
+.dev-card-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+.dev-card-emoji{font-size:18px;flex-shrink:0;}
+.dev-card-name{font-weight:600;font-size:14px;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dev-card-tag{
+  font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:5px;
+  background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);
+  white-space:nowrap;flex-shrink:0;
+}
+.dev-card-stats{font-family:var(--mono);font-size:10px;color:var(--fg-4);white-space:nowrap;flex-shrink:0;}
+.dev-card-chev{color:var(--fg-4);transition:transform 0.25s;font-size:12px;flex-shrink:0;}
+.dev-card.open .dev-card-chev{transform:rotate(90deg);}
 
-/* Switches */
-.dev-switches{display:flex;flex-wrap:wrap;gap:5px;padding:14px 18px;border-bottom:1px solid var(--line);}
-.sw{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:5px;}
+.dev-card-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;}
+.dev-card.open .dev-card-body{max-height:10000px;}
+.dev-card-inner{padding:4px 16px 14px;}
+
+/* Switches row */
+.dev-sw-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.sw-pill{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:6px;
+}
 .sw-on{background:var(--green-bg);color:var(--green);}
 .sw-off{background:rgba(160,224,232,0.06);color:var(--fg-4);}
 .sw-other{background:var(--hot-bg);color:var(--hot);}
-.sw-dot{width:6px;height:6px;border-radius:50%;}
+.sw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .sw-on .sw-dot{background:var(--green);box-shadow:0 0 6px var(--green);}
 .sw-off .sw-dot{background:var(--fg-4);}
 .sw-other .sw-dot{background:var(--hot);}
 
-/* Knobs */
-.dev-knobs{display:flex;flex-wrap:wrap;gap:4px;padding:14px 12px;}
-.knob{
-  width:72px;text-align:center;padding:8px 4px 6px;border-radius:8px;
-  transition:background 0.15s;
+/* Parameter rows (slider style) */
+.dev-params{display:flex;flex-direction:column;gap:6px;}
+.dev-param-row{
+  display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:10px;
+  padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);
 }
-.knob:hover{background:rgba(62,240,224,0.04);}
-.knob-ring-wrap{position:relative;width:36px;height:36px;margin:0 auto 5px;}
-.knob-ring{
-  position:absolute;top:2px;left:2px;right:2px;bottom:2px;
-  border-radius:50%;border:1.5px solid var(--line-2);
-  background:radial-gradient(circle at 40% 35%,var(--bg-4),var(--bg-2));
-  box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);
+.dev-param-row:last-child{border-bottom:none;}
+.dev-param-name{
+  font-family:var(--mono);font-size:11px;color:var(--fg-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.knob-needle{
-  position:absolute;top:4px;left:50%;width:2px;height:12px;
-  margin-left:-1px;transform-origin:bottom center;
-  background:linear-gradient(to top,var(--accent),var(--hot));
-  border-radius:1px;
+.dev-param-track{
+  height:6px;border-radius:3px;background:var(--bg-2);overflow:hidden;position:relative;
 }
-.knob-lbl{font-family:var(--mono);font-size:9px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.knob-val{font-family:var(--mono);font-size:10px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dev-param-fill{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--accent),var(--hot));
+  transition:width 0.3s;
+}
+.dev-param-val{
+  font-family:var(--mono);font-size:11px;color:var(--fg-2);
+  text-align:right;white-space:nowrap;
+}
 
 /* Chains */
-.dev-chains{padding:10px 18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.dev-chains{padding:8px 0 0;border-top:1px solid var(--line);margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .chain-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--fg-4);}
 .chain-badge{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:5px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(62,240,224,0.12);}
+
+/* Filtered note */
+.dev-filtered{
+  font-family:var(--mono);font-size:10px;color:var(--fg-5);
+  padding:6px 0 0;font-style:italic;
+}
+
+/* No params message */
+.dev-empty{
+  font-family:var(--mono);font-size:12px;color:var(--fg-4);
+  padding:12px 0;text-align:center;
+}
 
 /* ── SCENES ── */
 .scene-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
@@ -675,6 +741,11 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
   .float-card{left:10px;bottom:14px;width:150px;padding:12px;font-size:11px;}
   .scroll-btn{right:10px;bottom:14px;width:40px;height:40px;font-size:18px;}
+  /* Devices responsive */
+  .dev-param-row{grid-template-columns:90px 1fr 60px;gap:6px;}
+  .dev-track-name{font-size:14px;}
+  .dev-card-name{font-size:13px;}
+  .console-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
 }
 @media(max-width:480px){
   .top-nav{padding:8px 6px;gap:4px;}
@@ -689,6 +760,25 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .float-card{width:130px;padding:10px;}
   .float-brand{font-size:11px;}
   .float-sub{font-size:9px;}
+  /* Devices mobile */
+  .dev-param-row{grid-template-columns:70px 1fr 50px;gap:4px;}
+  .dev-param-name{font-size:10px;}
+  .dev-param-val{font-size:10px;}
+  .dev-track-badge{display:none;}
+  .dev-card-stats{display:none;}
+  .dev-track-head{padding:10px 12px;}
+  .dev-card-head{padding:10px 12px;}
+  .console-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr));}
+}
+@media(max-width:360px){
+  .dev-param-row{grid-template-columns:1fr;gap:2px;}
+  .dev-param-name{font-size:9px;}
+  .dev-param-track{height:4px;}
+  .console-grid{grid-template-columns:repeat(auto-fill,minmax(75px,1fr));}
+}
+@media(min-width:1200px){
+  .dev-card-inner .dev-params{column-count:2;column-gap:20px;}
+  .dev-param-row{break-inside:avoid;}
 }
 `;
 
@@ -716,9 +806,31 @@ const JS = `
   updateNav();
 
   // Device accordion
-  document.querySelectorAll('.dev-header').forEach(h => {
-    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
-  });
+  // Device search filter
+  var devSearch = document.getElementById('devSearch');
+  if (devSearch) {
+    devSearch.addEventListener('input', function() {
+      var q = this.value.toLowerCase().trim();
+      var tracks = document.querySelectorAll('.dev-track');
+      for (var i = 0; i < tracks.length; i++) {
+        var track = tracks[i];
+        var trackName = track.getAttribute('data-track') || '';
+        var cards = track.querySelectorAll('.dev-card');
+        var anyVisible = false;
+        for (var j = 0; j < cards.length; j++) {
+          var card = cards[j];
+          var devName = card.getAttribute('data-device') || '';
+          if (!q || devName.indexOf(q) >= 0 || trackName.indexOf(q) >= 0) {
+            card.style.display = '';
+            anyVisible = true;
+          } else {
+            card.style.display = 'none';
+          }
+        }
+        track.style.display = (!q || anyVisible) ? '' : 'none';
+      }
+    });
+  }
 
   // Notes localStorage
   const notes = document.getElementById('project-notes');
@@ -987,7 +1099,7 @@ function renderClipsSection(data: ProjectSnapshot): string {
   const masterTrack = data.tracks.find(t => t.type === 'master');
 
   return `<div class="section-divider"></div>
-<section class="section" id="clips">
+<section class="section" id="mixer">
   <div class="section-head">
     <div class="section-badge purple">🎛️ Mixer</div>
     <h2 class="section-title">Mixing <span class="grad">Console</span></h2>
@@ -1056,33 +1168,67 @@ function renderChannel(track: SnapshotTrack): string {
 
 function renderDevicesSection(data: ProjectSnapshot): string {
   const tracksWithDevices = data.tracks.filter(t => t.devices.length > 0);
+  // Count total meaningful params
+  let totalMeaningful = 0;
+  let totalAll = 0;
+  for (const t of tracksWithDevices) {
+    for (const d of t.devices) {
+      totalAll += d.parameters.length;
+      totalMeaningful += d.parameters.filter(p => isParamMeaningful(p)).length;
+    }
+  }
   return `<div class="section-divider"></div>
 <section class="section" id="devices">
   <div class="section-head">
     <div class="section-badge teal">🔌 Devices</div>
     <h2 class="section-title">Devices & <span class="grad">Parameters</span></h2>
-    <p class="section-desc">${data.overview.totalDeviceCount} devices with their parameters — click to expand</p>
+    <p class="section-desc">${data.overview.totalDeviceCount} devices — ${totalMeaningful} of ${totalAll} parameters modified</p>
   </div>
-  ${tracksWithDevices.map(t => renderDevGroup(t)).join("")}
+  <div class="dev-search-wrap" style="position:relative;">
+    <span class="dev-search-icon">🔍</span>
+    <input type="text" class="dev-search" id="devSearch" placeholder="Search devices or tracks..." autocomplete="off">
+  </div>
+  <div id="devList">
+  ${tracksWithDevices.map(t => renderDevTrack(t)).join("")}
+  </div>
 </section>`;
 }
 
-function renderDevGroup(track: SnapshotTrack): string {
-  return `<div class="dev-group">
-    <div class="dev-group-title">${getTrackTypeEmoji(track.type)} ${esc(track.name)}</div>
-    ${track.devices.map(d => renderDevRack(d)).join("")}
-  </div>`;
+function renderDevTrack(track: SnapshotTrack): string {
+  const totalParams = track.devices.reduce((s, d) => s + d.parameters.length, 0);
+  const meaningful = track.devices.reduce((s, d) => s + d.parameters.filter(p => isParamMeaningful(p)).length, 0);
+  const typeLabel = track.type === 'master' ? 'Master' : track.type === 'return' ? 'Return' : getTrackTypeName(track.type);
+
+  return `<div class="dev-track" data-track="${esc(track.name.toLowerCase())}">
+  <div class="dev-track-head" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');">
+    <span class="dev-track-icon">${getTrackTypeEmoji(track.type)}</span>
+    <div class="dev-track-info">
+      <div class="dev-track-name">${esc(track.name)}</div>
+      <div class="dev-track-meta">${track.devices.length} device${track.devices.length > 1 ? "s" : ""} · ${meaningful}/${totalParams} params modified</div>
+    </div>
+    <span class="dev-track-badge">${typeLabel}</span>
+    <span class="dev-track-chevron">▶</span>
+  </div>
+  <div class="dev-track-body">
+    <div class="dev-track-inner">
+      ${track.devices.map(d => renderDevCard(d)).join("")}
+    </div>
+  </div>
+</div>`;
 }
 
-function renderDevRack(device: SnapshotDevice): string {
+function renderDevCard(device: SnapshotDevice): string {
   const emojiMap: Record<string,string> = {device:"🔌",rack:"🎛️",simpler:"🎵",drumRack:"🥁"};
   const tagMap: Record<string,string> = {device:"Device",rack:"Rack",simpler:"Simpler",drumRack:"Drum Rack"};
   const emoji = emojiMap[device.type] ?? "🔌";
   const tag = tagMap[device.type] ?? device.className;
 
+  const meaningfulParams = device.parameters.filter(p => isParamMeaningful(p));
+  const totalParams = device.parameters.length;
+
   const knobs: SnapshotParameter[] = [];
   const switches: SnapshotParameter[] = [];
-  for (const p of device.parameters) {
+  for (const p of meaningfulParams) {
     if (p.isQuantized && p.valueItems.length <= 2) switches.push(p);
     else knobs.push(p);
   }
@@ -1091,25 +1237,75 @@ function renderDevRack(device: SnapshotDevice): string {
     ? `<div class="dev-chains"><span class="chain-lbl">CHAINS</span>${device.chains.map(c => `<span class="chain-badge">${esc(c.name)}</span>`).join("")}</div>`
     : "";
 
-  return `<div class="dev-rack">
-    <div class="dev-header">
-      <div class="dev-h-left">
-        <span class="dev-emoji">${emoji}</span>
-        <span class="dev-name">${esc(device.name)}</span>
-        <span class="dev-type">${tag}</span>
-        <span class="dev-count">${device.parameters.length} params</span>
+  const filteredCount = totalParams - meaningfulParams.length;
+  const filteredNote = filteredCount > 0
+    ? `<div class="dev-filtered">${filteredCount} param${filteredCount > 1 ? "s" : ""} at default — hidden</div>`
+    : "";
+
+  // Build param rows with slider bars
+  const paramRows = knobs.slice(0, 30).map(p => {
+    const info = getParamInfo(p);
+    return `<div class="dev-param-row">
+      <div class="dev-param-name" title="${esc(p.name)}">${esc(p.name)}</div>
+      <div class="dev-param-track"><div class="dev-param-fill" style="width:${info.pct}%"></div></div>
+      <div class="dev-param-val">${esc(String(info.display))}</div>
+    </div>`;
+  }).join("");
+
+  const moreParams = knobs.length > 30
+    ? `<div class="dev-filtered">+${knobs.length - 30} more parameters</div>`
+    : "";
+
+  const switchesHtml = switches.length > 0
+    ? `<div class="dev-sw-row">${switches.map(p => renderSwitch(p)).join("")}</div>`
+    : "";
+
+  const emptyMsg = knobs.length === 0 && switches.length === 0
+    ? `<div class="dev-empty">All parameters at default values</div>`
+    : "";
+
+  return `<div class="dev-card" data-device="${esc(device.name.toLowerCase())}">
+    <div class="dev-card-head" onclick="this.parentElement.classList.toggle('open');">
+      <div class="dev-card-left">
+        <span class="dev-card-emoji">${emoji}</span>
+        <span class="dev-card-name">${esc(device.name)}</span>
       </div>
-      <span class="dev-chevron">▼</span>
+      <span class="dev-card-tag">${tag}</span>
+      <span class="dev-card-stats">${meaningfulParams.length}/${totalParams}</span>
+      <span class="dev-card-chev">▶</span>
     </div>
-    <div class="dev-body">
-      ${switches.length > 0 ? `<div class="dev-switches">${switches.map(p => renderSwitch(p)).join("")}</div>` : ""}
-      <div class="dev-knobs">
-        ${knobs.slice(0, 40).map(p => renderKnob(p)).join("")}
-        ${knobs.length > 40 ? `<div style="font-family:var(--mono);font-size:11px;color:var(--fg-4);padding:10px;">+${knobs.length - 40} more</div>` : ""}
+    <div class="dev-card-body">
+      <div class="dev-card-inner">
+        ${switchesHtml}
+        ${paramRows ? `<div class="dev-params">${paramRows}</div>` : ""}
+        ${emptyMsg}
+        ${moreParams}
+        ${filteredNote}
+        ${chainsHtml}
       </div>
-      ${chainsHtml}
     </div>
   </div>`;
+}
+
+/** Check if a parameter has a meaningful value worth displaying */
+function isParamMeaningful(p: SnapshotParameter): boolean {
+  const numValue = typeof p.value === "number" ? p.value : 0;
+  const numDefault = typeof p.defaultValue === "number" ? p.defaultValue : 0;
+  const numMin = typeof p.minValue === "number" ? p.minValue : 0;
+  const numMax = typeof p.maxValue === "number" ? p.maxValue : 1;
+  const range = numMax - numMin;
+
+  // Always show "Device On" / "On/Off" type switches regardless of value
+  const nameLower = p.name.toLowerCase();
+  if (nameLower === "device on" || nameLower === "on" || nameLower === "off") return true;
+
+  // If value differs from default, it's meaningful
+  if (Math.abs(numValue - numDefault) > 0.001) return true;
+
+  // If it's a quantized parameter with explicit options, show it
+  if (p.isQuantized && p.valueItems.length > 2) return true;
+
+  return false;
 }
 
 function getParamInfo(param: SnapshotParameter): { display: string; pct: number } {
@@ -1136,25 +1332,12 @@ function getParamInfo(param: SnapshotParameter): { display: string; pct: number 
   return { display, pct };
 }
 
-function renderKnob(param: SnapshotParameter): string {
-  const { display, pct } = getParamInfo(param);
-  const angle = -135 + (pct / 100) * 270;
-  return `<div class="knob">
-    <div class="knob-ring-wrap">
-      <div class="knob-ring"></div>
-      <div class="knob-needle" style="transform:rotate(${angle}deg)"></div>
-    </div>
-    <div class="knob-lbl">${esc(param.name)}</div>
-    <div class="knob-val">${esc(String(display))}</div>
-  </div>`;
-}
-
 function renderSwitch(param: SnapshotParameter): string {
   const { display } = getParamInfo(param);
   const isOn = ["on","true","yes","1","active"].includes(String(display).toLowerCase());
   const isOff = ["off","false","no","0","inactive"].includes(String(display).toLowerCase());
   const cls = isOn ? "sw-on" : isOff ? "sw-off" : "sw-other";
-  return `<div class="sw ${cls}"><div class="sw-dot"></div>${esc(param.name)}</div>`;
+  return `<div class="sw-pill ${cls}"><div class="sw-dot"></div>${esc(param.name)}: ${esc(String(display))}</div>`;
 }
 
 // ══════════════════════════════════════
