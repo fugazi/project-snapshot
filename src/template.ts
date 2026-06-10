@@ -329,7 +329,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .stat-lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-3);}
 
 /* ── TRACK CARDS ── */
-.track-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.track-grid{display:grid;grid-template-columns:repeat(auto-fill,280px);gap:12px;justify-content:center;}
 .track-card{
   background:var(--glass);border:1px solid var(--line);
   border-radius:var(--radius);padding:18px;
@@ -737,7 +737,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .section{padding:36px 0;}
   .section-title{font-size:clamp(22px,4vw,32px);}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .track-grid{grid-template-columns:1fr;}
+  .track-grid{grid-template-columns:1fr;justify-content:stretch;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
   .float-card{left:10px;bottom:14px;width:150px;padding:12px;font-size:11px;}
   .scroll-btn{right:10px;bottom:14px;width:40px;height:40px;font-size:18px;}
