@@ -737,7 +737,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .section{padding:36px 0;}
   .section-title{font-size:clamp(22px,4vw,32px);}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .track-grid{grid-template-columns:1fr!important;justify-content:stretch;}
+    .track-grid{grid-template-columns:1fr!important;justify-content:stretch;}
+  .track-card{width:100%;min-width:0;}
   .scene-grid{grid-template-columns:repeat(2,1fr);}
   .float-card{left:10px;bottom:14px;width:150px;padding:12px;font-size:11px;}
   .scroll-btn{right:10px;bottom:14px;width:40px;height:40px;font-size:18px;}
