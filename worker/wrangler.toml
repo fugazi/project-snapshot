@@ -1,0 +1,11 @@
+name = "project-snapshot-ai"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Environment variables (set via: wrangler secret put CF_ACCOUNT_ID / CF_API_TOKEN)
+# [vars]
+# CF_ACCOUNT_ID = "your-account-id"
+
+# Secrets (set via wrangler secret put):
+# CF_ACCOUNT_ID
+# CF_API_TOKEN

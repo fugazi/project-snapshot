@@ -12,6 +12,7 @@ import {
 import { extractSnapshot } from "./extractor.js";
 import { generateReport } from "./generator.js";
 import { buildModalHtml, buildSuccessModalHtml } from "./modal.js";
+import { fetchAISuggestions, getLocalFallbackSuggestions } from "./ai-suggestions.js";
 
 export function activate(activation: ActivationContext) {
   const context = initialize(activation, "1.0.0");
@@ -136,6 +137,20 @@ async function runGeneration(
         await update("Generating HTML report...", 85);
 
         const storageDir = context.environment.storageDirectory;
+
+        // Fetch AI suggestions (non-blocking — fallback to local if fails)
+        await update("Getting AI creative ideas...", 88);
+        let aiSuggestions = null;
+        try {
+          aiSuggestions = await fetchAISuggestions(snapshot);
+          if (!aiSuggestions) {
+            aiSuggestions = getLocalFallbackSuggestions(snapshot);
+          }
+        } catch {
+          aiSuggestions = getLocalFallbackSuggestions(snapshot);
+        }
+        snapshot.aiSuggestions = aiSuggestions ?? undefined;
+
         const outputPath = await generateReport(snapshot, storageDir, filename);
 
         await update("Done! ✅", 100);

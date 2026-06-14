@@ -110,6 +110,12 @@ export interface SnapshotSuggestion {
   type: "info" | "warning" | "tip";
 }
 
+export interface AISuggestion {
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export interface ProjectSnapshot {
   generatedAt: string;
   generatedDate: string;
@@ -119,6 +125,7 @@ export interface ProjectSnapshot {
   scenes: SnapshotScene[];
   cuePoints: SnapshotCuePoint[];
   suggestions: SnapshotSuggestion[];
+  aiSuggestions?: AISuggestion[];
 }
 
 // ── Utility types ──
