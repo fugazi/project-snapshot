@@ -99,7 +99,7 @@ export async function fetchAISuggestions(
     }
 
     console.log(`📸 AI suggestions: received ${valid.length} suggestions`);
-    return valid.slice(0, 5);
+    return valid.slice(0, 6);
   } catch (error: any) {
     if (error?.name === "AbortError") {
       console.warn("📸 AI suggestions: request timed out");
@@ -205,5 +205,5 @@ export function getLocalFallbackSuggestions(snapshot: ProjectSnapshot): AISugges
     description: `Your project is in ${rootName} ${o.scaleName || "a scale"}. Try modal interchange — borrow chords from the parallel major/minor for emotional contrast.`,
   });
 
-  return suggestions.slice(0, 5);
+  return suggestions.slice(0, 6);
 }

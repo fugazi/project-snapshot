@@ -85,7 +85,7 @@ export default {
               { role: "system", content: SYSTEM_PROMPT },
               { role: "user", content: prompt },
             ],
-            max_tokens: 1200,
+            max_tokens: 1500,
             temperature: 0.8,
             response_format: { type: "json_object" },
           }),
@@ -118,7 +118,7 @@ export default {
       }
 
       // Limit to 5 suggestions
-      suggestions = suggestions.slice(0, 5);
+      suggestions = suggestions.slice(0, 6);
 
       return new Response(JSON.stringify({ suggestions }), {
         headers: { "Content-Type": "application/json", ...CORS_HEADERS },
@@ -137,7 +137,7 @@ export default {
 
 const SYSTEM_PROMPT = `You are a professional music production advisor with deep expertise in electronic music production, sound design, mixing, and creative workflow. You specialize in helping producers overcome creative blocks and develop their projects further.
 
-Your task: Analyze the provided Ableton Live Set data and generate exactly 5 creative, specific, and actionable suggestions to help the producer develop this project.
+Your task: Analyze the provided Ableton Live Set data and generate exactly 6 creative, specific, and actionable suggestions to help the producer develop this project.
 
 Rules:
 - Be specific to the project data (reference BPM, devices, track count, etc.)
@@ -255,5 +255,5 @@ function getFallbackSuggestions(data: ProjectData): AISuggestion[] {
     description: `Try applying ${data.deviceNames.length > 0 ? data.deviceNames[0] : "a new effect"} creatively — automate parameters over time for evolving textures.`,
   });
 
-  return suggestions.slice(0, 5);
+  return suggestions.slice(0, 6);
 }
