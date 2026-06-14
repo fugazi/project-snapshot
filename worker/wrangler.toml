@@ -2,10 +2,10 @@ name = "project-snapshot-ai"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
-# Environment variables (set via: wrangler secret put CF_ACCOUNT_ID / CF_API_TOKEN)
-# [vars]
-# CF_ACCOUNT_ID = "your-account-id"
+# Account ID — visible in Cloudflare dashboard (not a secret, just an identifier)
+# Replace with your actual Account ID
+[vars]
+CF_ACCOUNT_ID = "YOUR_ACCOUNT_ID_HERE"
 
-# Secrets (set via wrangler secret put):
-# CF_ACCOUNT_ID
-# CF_API_TOKEN
+# Secrets (set via: npx wrangler secret put CF_API_TOKEN)
+# CF_API_TOKEN — set via wrangler secret put, encrypted in Cloudflare
