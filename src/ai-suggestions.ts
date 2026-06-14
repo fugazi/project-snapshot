@@ -8,7 +8,7 @@ import type { ProjectSnapshot, AISuggestion } from "./types.js";
 
 // The Cloudflare Worker endpoint
 // Users can self-host their own worker if needed
-const AI_WORKER_URL = "https://project-snapshot-ai.fugazi.workers.dev/suggestions";
+const AI_WORKER_URL = "https://project-snapshot-ai.ableton-snapshot.workers.dev/suggestions";
 
 // Timeout for the AI request (8 seconds)
 const AI_TIMEOUT_MS = 8000;
