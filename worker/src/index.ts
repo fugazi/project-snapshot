@@ -41,7 +41,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const MODEL = "@cf/zai-org/glm-4.7-flash";
 
 export default {
   async fetch(request: Request, env: Record<string, string>): Promise<Response> {
