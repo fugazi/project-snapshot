@@ -289,7 +289,8 @@ Senior QA Automation Engineer & Electronic Music Producer
 
 ## 📄 License
 
-This project is provided as-is for educational and personal use.  
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+
 Built with the [Ableton Extensions SDK](https://www.ableton.com) (beta).  
 AI suggestions powered by [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/).
 
