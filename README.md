@@ -4,6 +4,8 @@
 
 Project Snapshot is an Ableton Live extension that generates a beautiful, interactive HTML report of your entire Live Set — tracks, clips, devices, parameters, scenes, and more. Now with **AI-powered creative suggestions** to boost your inspiration. Perfect for retaking projects after weeks or months away.
 
+![Project Snapshot Workflow](./screenshot.png)
+
 ---
 
 ## ✨ What It Does
