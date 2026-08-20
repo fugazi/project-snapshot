@@ -11,9 +11,9 @@
   },
   "devDependencies": {
     "@ableton-extensions/cli": "file:./vendor/ableton-extensions-cli-1.0.0-beta.0.tgz",
-    "@types/node": "^25.9.2",
-    "esbuild": "^0.28.1",
-    "tsx": "^4.19.0",
-    "typescript": "^6.0.3"
+    "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
   }
 }
