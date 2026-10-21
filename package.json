@@ -1,6 +1,9 @@
 {
   "type": "module",
   "main": "dist/extension.js",
+  "engines": {
+    "node": ">=22.23.4"
+  },
   "scripts": {
     "build": "tsc --noEmit && tsx build.ts",
     "start": "tsx build.ts && extensions-cli run",
